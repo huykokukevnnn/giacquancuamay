@@ -563,7 +563,7 @@
         const Game2 = {
             recog: null, botInterval: null, state: 'init',
             studentHP: 100, botHP: 100, difficulty: 'easy', numItems: 1, phase: 1, maxBotHP: 100, maxStudentHP: 100,
-            streak: 0, lastSolveTime: 0, isMicOn: false, isAttacking: false, forceRestartSTT: false,
+            streak: 0, lastSolveTime: 0, isMicOn: false, isAttacking: false, forceRestartSTT: false, attackCount: 0,
             words: [ { word: "quả táo", emoji: "🍎" }, { word: "con mèo", emoji: "🐱" }, { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" }, { word: "con chó", emoji: "🐶" }, { word: "quả chuối", emoji: "🍌" }, { word: "dưa hấu", emoji: "🍉" }, { word: "xe đạp", emoji: "🚲" }, { word: "bánh pizza", emoji: "🍕" }, { word: "hoa hướng dương", emoji: "🌻" }, { word: "cái mũ", emoji: "🎩" }, { word: "cái kính", emoji: "👓" }, { word: "đồng hồ", emoji: "⌚" }, { word: "điện thoại", emoji: "📱" }, { word: "quả cam", emoji: "🍊" }, { word: "con hổ", emoji: "🐯" }, { word: "con chim", emoji: "🐦" }, { word: "quyển sách", emoji: "📚" } ],
             wordPool: [], currentTargets: [],
 
@@ -584,8 +584,8 @@
                 const inter = setInterval(() => { count--; if(count > 0) { txt.innerText = count; SFX.playTing(); } else if(count === 0) { txt.innerText = "CHIẾN!"; SFX.playExplosion(); } else { clearInterval(inter); document.getElementById('g2-countdown-overlay').classList.add('hidden'); Game2.startGame(); } }, 1000);
             },
             resetUI: () => {
-                Game2.studentHP = 100; Game2.botHP = 100; Game2.streak = 0; Game2.lastSolveTime = 0; Game2.isMicOn = false; Game2.phase = 1; Game2.wordPool = [...Game2.words];
-                Game2.updateHP('student', 100); Game2.updateHP('bot', 100); clearInterval(Game2.botInterval);
+                Game2.studentHP = 100; Game2.botHP = 100; Game2.streak = 0; Game2.lastSolveTime = 0; Game2.isMicOn = false; Game2.phase = 1; Game2.wordPool = [...Game2.words]; Game2.attackCount = 0;
+                Game2.updateHP('student', 100); Game2.updateHP('bot', 100); clearInterval(Game2.botInterval); document.getElementById('combo-display').innerText = 'Combo x1! 🔥';
                 document.getElementById('student-bubble').classList.remove('opacity-100'); document.getElementById('student-bubble').classList.add('opacity-0'); document.getElementById('emoji-container').innerHTML = '';
                 
                 let btn = document.getElementById('btn-mic'); btn.classList.remove('btn-red'); btn.classList.add('btn-blue'); btn.innerHTML = '<i class="fa-solid fa-microphone mr-3 text-2xl"></i> Bật Micro Đọc Thần Chú';
@@ -707,10 +707,17 @@
                 setTimeout(() => {
                     SFX.playExplosion(); document.getElementById('duel-arena').classList.add('animate-shake'); setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
                     
-                    // Sát thương = 10 * streak (40% của 25)
-                    let dmg = 10 * Game2.streak; 
+                    // Sát thương = 10 + (streak - 1) * 5
+                    let dmg = 10 + (Game2.streak - 1) * 5; 
                     Game2.botHP = Math.max(0, Game2.botHP - dmg);
                     Game2.updateHP('bot', Game2.botHP); proj.className = "magic-projectile"; 
+                    
+                    Game2.attackCount++;
+                    if (Game2.difficulty === 'hard' && Game2.attackCount % 3 === 0) {
+                        Game2.studentHP = Math.min(100, Game2.studentHP + 10);
+                        Game2.updateHP('student', Game2.studentHP);
+                        SFX.playHeal();
+                    }
                     
                     if(Game2.botHP <= 0) {
                         if (Game2.difficulty === 'hard' && Game2.phase === 1) {
