@@ -585,8 +585,8 @@
         // ==========================================
         const Game1 = {
             model: null, stream: null, ctx: null, reqId: null, trackId: null, isRunning: false,
-            basket: { x: 320, width: 120, height: 25, color: '#1e293b' },
-            items: [], particles: [], score: 0, target: 10, time: 60, timerInterval: null,
+            basket: { x: 320, y: 240, width: 120, height: 25, color: '#1e293b' },
+            items: [], particles: [], score: 0, target: 25, time: 60, timerInterval: null,
             canvas: document.getElementById('game-canvas'), video: document.getElementById('webcam-video'),
 
             initTab: () => {
@@ -675,8 +675,11 @@
                 try {
                     const preds = await Game1.model.estimateFaces(Game1.video, false);
                     if (preds.length > 0) {
-                        const nose = preds[0].landmarks[2]; const targetX = Game1.canvas.width - nose[0];
+                        const nose = preds[0].landmarks[2]; 
+                        const targetX = Game1.canvas.width - nose[0];
+                        const targetY = nose[1];
                         Game1.basket.x += (targetX - Game1.basket.x) * 0.25; 
+                        Game1.basket.y += (targetY - Game1.basket.y) * 0.25; 
                     }
                 } catch(e) {}
                 Game1.trackId = setTimeout(Game1.TrackLoop, 50); 
@@ -686,18 +689,18 @@
                 Game1.ctx.clearRect(0, 0, Game1.canvas.width, Game1.canvas.height);
                 Game1.ctx.drawImage(Game1.video, 0, 0, Game1.canvas.width, Game1.canvas.height);
                 
-                if(Math.random() < 0.03 + (Game1.score * 0.002)) {
+                if(Math.random() < 0.015 + (Game1.score * 0.001)) {
                     const colors = ['#4DA5F4', '#FFC107', '#22c55e', '#ef4444'];
                     let margin = Game1.canvas.width * 0.2;
                     let spawnWidth = Game1.canvas.width * 0.6;
                     Game1.items.push({
                         x: Math.random() * spawnWidth + margin, y: -30, radius: Math.random() * 10 + 15, // bigger flat balls
-                        speed: Math.random() * 3 + 3, color: colors[Math.floor(Math.random()*colors.length)]
+                        speed: (Math.random() * 3 + 3) * 0.8, color: colors[Math.floor(Math.random()*colors.length)]
                     });
                 }
 
                 let bX = (Game1.canvas.width - Game1.basket.x);
-                let basketDrawX = bX - Game1.basket.width/2; let basketDrawY = Game1.canvas.height - Game1.basket.height - 20;
+                let basketDrawX = bX - Game1.basket.width/2; let basketDrawY = Game1.basket.y - Game1.basket.height/2;
                 
                 Game1.ctx.fillStyle = '#FFC107'; // yellow basket
                 Game1.ctx.fillRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
