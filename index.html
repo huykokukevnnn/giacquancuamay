@@ -34,7 +34,7 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #fff7ed; /* orange-50 */
+            background-color: #fff7ed;
             overflow-x: hidden;
         }
 
@@ -61,7 +61,7 @@
         /* General Game Windows */
         .game-window {
             background: white; border-radius: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(255, 237, 213, 0.6); /* shadow-2xl orange-100 */
+            box-shadow: 0 25px 50px -12px rgba(255, 237, 213, 0.6);
         }
 
         /* Game 1 Canvas */
@@ -83,8 +83,8 @@
             z-index: 50; top: 60%; left: 20%; transform: translate(-50%, -50%);
             opacity: 0; pointer-events: none;
         }
-        .shoot-bot { animation: shootBot 0.5s ease-in forwards; background: #10b981; box-shadow: 0 0 25px #10b981, 0 0 50px #10b981; }
-        .shoot-student { animation: shootStudent 0.5s ease-in forwards; background: #8b5cf6; box-shadow: 0 0 25px #8b5cf6, 0 0 50px #8b5cf6; }
+        .shoot-bot { animation: shootBot 0.4s ease-in forwards; background: #10b981; box-shadow: 0 0 25px #10b981, 0 0 50px #10b981; }
+        .shoot-student { animation: shootStudent 0.4s ease-in forwards; background: #8b5cf6; box-shadow: 0 0 25px #8b5cf6, 0 0 50px #8b5cf6; }
         
         @keyframes shootBot {
             0% { top: 60%; left: 20%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -93,6 +93,35 @@
         @keyframes shootStudent {
             0% { top: 60%; left: 80%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
             100% { top: 60%; left: 20%; opacity: 1; transform: translate(-50%, -50%) scale(2); }
+        }
+
+        /* Chaotic Animations for Game 2 Hard Mode */
+        @keyframes float-circle {
+            0% { transform: rotate(0deg) translateX(15px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
+        }
+        @keyframes float-eight {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(20px, -15px); }
+            50% { transform: translate(0, 0); }
+            75% { transform: translate(-20px, 15px); }
+            100% { transform: translate(0, 0); }
+        }
+        .anim-circle { animation: float-circle 1.5s linear infinite; }
+        .anim-eight { animation: float-eight 2s ease-in-out infinite; }
+        .anim-bounce-alt { animation: bounce 1s infinite alternate; }
+
+        .emoji-item {
+            font-size: 3.5rem; 
+            transition: all 0.3s;
+            display: inline-block;
+            position: absolute; /* Let JS handle absolute positions in the bubble */
+        }
+        .emoji-solved {
+            opacity: 0.2 !important;
+            filter: grayscale(100%);
+            transform: scale(0.8) !important;
+            animation: none !important;
         }
 
         /* Game 3 Waveform */
@@ -123,7 +152,6 @@
 </head>
 <body class="min-h-screen flex flex-col items-center pt-28 pb-10 text-slate-800" onclick="SFX.init()">
 
-    <!-- Animated Background -->
     <div class="stars-container" id="stars-container"></div>
 
     <!-- Navigation -->
@@ -195,24 +223,45 @@
         <!-- ========================================== -->
         <!-- VIEW 1: GAME 2 (SPEECH TO TEXT) -->
         <!-- ========================================== -->
-        <section id="view-1" class="view-section hidden-view w-full game-window p-6 md:p-10 border border-orange-50 flex flex-col items-center">
+        <section id="view-1" class="view-section hidden-view w-full game-window p-6 md:p-10 border border-orange-50 flex flex-col items-center relative">
             <div class="text-center mb-6">
                 <h2 class="text-2xl md:text-4xl font-black text-emerald-600 mb-3 tracking-tight">
                     <i class="fa-solid fa-wand-magic-sparkles mr-3"></i>Đại Chiến Pháp Sư Phép Thuật AI
                 </h2>
-                <p class="text-slate-600 font-medium bg-emerald-50 inline-block px-5 py-2 rounded-full border border-emerald-200">
-                    Nhiệm vụ: Nhìn vào hình ảnh xuất hiện trên đầu nhân vật, đọc to tên vật thể đó để Pháp sư của bạn phóng phép thuật tấn công Bot AI trước khi bị phản đòn!
-                </p>
             </div>
 
             <!-- Duel Arena -->
             <div id="duel-arena" class="w-full relative bg-slate-900 rounded-3xl p-6 overflow-hidden border-4 border-slate-800 h-[500px] flex justify-between items-center bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80')] bg-cover bg-center">
-                <div class="absolute inset-0 bg-slate-900/60"></div>
+                
+                <!-- Overlays -->
+                <div id="g2-tutorial-overlay" class="absolute inset-0 bg-slate-900/90 z-[60] flex flex-col items-center justify-center p-6 text-center backdrop-blur-md">
+                    <h3 class="text-4xl font-black text-emerald-400 mb-6 drop-shadow-lg">Cách chơi</h3>
+                    <p class="text-white text-xl font-medium max-w-md mb-8 leading-relaxed">
+                        Hãy nhìn hình 🐱 phía trên nhân vật của bạn ấn giữ micro.<br><br>Sau đó đọc lớn tên vật thể trong hình để tấn công đối thủ.
+                    </p>
+                    <button onclick="Game2.closeTutorial()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-12 rounded-full shadow-lg transition-transform hover:scale-105 text-xl border-2 border-emerald-400">Tiếp tục</button>
+                </div>
+
+                <div id="g2-start-overlay" class="absolute inset-0 bg-slate-900/90 z-[55] flex flex-col items-center justify-center p-6 text-center backdrop-blur-md hidden">
+                    <h3 class="text-3xl font-black text-white mb-8">Chọn Độ Khó</h3>
+                    <div class="flex gap-4 mb-10">
+                        <button onclick="Game2.selectDiff('easy')" id="btn-diff-easy" class="px-8 py-3 rounded-xl font-bold bg-emerald-500 text-white shadow-[0_0_15px_#10b981] border-2 border-white text-lg transition-all">Dễ</button>
+                        <button onclick="Game2.selectDiff('medium')" id="btn-diff-medium" class="px-8 py-3 rounded-xl font-bold bg-slate-700 text-white border-2 border-transparent hover:bg-amber-500 text-lg transition-all">Trung bình</button>
+                        <button onclick="Game2.selectDiff('hard')" id="btn-diff-hard" class="px-8 py-3 rounded-xl font-bold bg-slate-700 text-white border-2 border-transparent hover:bg-crimson-500 text-lg transition-all">Khó</button>
+                    </div>
+                    <button onclick="Game2.startCountdown()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-black py-4 px-16 rounded-full shadow-xl shadow-indigo-500/50 text-2xl transition-transform hover:scale-105 border-2 border-indigo-400">BẮT ĐẦU</button>
+                </div>
+
+                <div id="g2-countdown-overlay" class="absolute inset-0 bg-slate-900/80 z-[50] flex items-center justify-center backdrop-blur-md hidden">
+                    <span id="g2-countdown-text" class="text-[10rem] font-black text-emerald-400 drop-shadow-[0_0_50px_rgba(16,185,129,0.8)] animate-bounce">3</span>
+                </div>
+
+                <div class="absolute inset-0 bg-slate-900/60 z-10 pointer-events-none"></div>
                 
                 <div id="projectile" class="magic-projectile"></div>
 
                 <!-- STUDENT SORCERER (LEFT) -->
-                <div class="relative z-10 flex flex-col items-center w-1/3">
+                <div class="relative z-20 flex flex-col items-center w-1/3">
                     <div class="w-full flex justify-between mb-1">
                         <span class="text-white font-bold text-sm">Pháp Sư Học Sinh</span>
                     </div>
@@ -221,16 +270,18 @@
                         <div id="student-hp-red" class="absolute top-0 left-0 h-full bg-emerald-500 w-full transition-all duration-200 ease-out"></div>
                     </div>
                     
-                    <div id="student-bubble" class="mt-6 mb-2 bg-white px-4 py-2 rounded-2xl shadow-lg border-4 border-emerald-400 relative opacity-0 transition-opacity">
-                        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-emerald-400"></div>
-                        <span id="student-emoji" class="text-5xl">🍎</span>
+                    <div id="student-bubble" class="mt-8 mb-2 bg-white rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border-4 border-emerald-400 relative opacity-0 transition-opacity w-[200px] h-[100px] flex items-center justify-center">
+                        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[14px] border-t-emerald-400"></div>
+                        <div id="emoji-container" class="relative w-full h-full flex items-center justify-center">
+                            <!-- Emojis appended here -->
+                        </div>
                     </div>
 
-                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(16,185,129,0.8)] mt-2">🧙‍♂️</div>
+                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(16,185,129,0.8)] mt-4">🧙‍♂️</div>
                 </div>
 
                 <!-- BOT SORCERER (RIGHT) -->
-                <div class="relative z-10 flex flex-col items-center w-1/3">
+                <div class="relative z-20 flex flex-col items-center w-1/3">
                     <div class="w-full flex justify-end mb-1">
                         <span class="text-white font-bold text-sm">Pháp Sư Bot AI</span>
                     </div>
@@ -239,21 +290,16 @@
                         <div id="bot-hp-red" class="absolute top-0 right-0 h-full bg-crimson-500 w-full transition-all duration-200 ease-out origin-right"></div>
                     </div>
 
-                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] mt-24">🤖</div>
+                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] mt-32">🤖</div>
                 </div>
 
             </div>
             
             <div class="w-full max-w-2xl mt-8 flex flex-col items-center">
-                <button id="btn-mic" onmousedown="Game2.startListen()" onmouseup="Game2.stopListen()" ontouchstart="Game2.startListen()" ontouchend="Game2.stopListen()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-10 rounded-full shadow-xl shadow-emerald-500/50 transition-all select-none flex items-center text-lg active:scale-95 mb-4">
-                    <i class="fa-solid fa-microphone mr-3 text-2xl"></i> Nhấn và Giữ để Đọc Thần Chú
+                <button id="btn-mic" onmousedown="Game2.startListen()" onmouseup="Game2.stopListen()" ontouchstart="Game2.startListen()" ontouchend="Game2.stopListen()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-5 px-12 rounded-full shadow-xl shadow-emerald-500/50 transition-all select-none flex items-center text-xl active:scale-95 mb-4 border-2 border-emerald-400" disabled>
+                    <i class="fa-solid fa-microphone mr-3 text-3xl"></i> Nhấn và Giữ để Đọc Thần Chú
                 </button>
-                <div id="g2-fallback-area" class="w-full flex gap-2 hidden">
-                    <input type="text" id="fallback-spell" placeholder="Nhập tên vật thể (vd: quả táo)..." class="flex-1 px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 outline-none text-lg">
-                    <button onclick="Game2.checkSpell(document.getElementById('fallback-spell').value)" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700">Tung Chiêu</button>
-                </div>
-                <p class="text-center mt-3 text-orange-600 font-medium underline cursor-pointer" onclick="document.getElementById('g2-fallback-area').classList.remove('hidden')">Trình duyệt lỗi Micro? Nhấp vào đây để nhập chú ngữ bằng bàn phím.</p>
-                <p id="stt-feedback" class="mt-4 font-bold text-xl h-8 text-center text-slate-500"></p>
+                <p id="stt-feedback" class="mt-2 font-bold text-xl h-8 text-center text-slate-500"></p>
             </div>
         </section>
 
@@ -272,7 +318,6 @@
             </div>
             
             <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Controls (Left) -->
                 <div class="flex-1 flex flex-col gap-6">
                     <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-inner">
                         <label class="block text-sm font-bold text-slate-700 mb-3 uppercase">Lời chào</label>
@@ -297,9 +342,7 @@
                     </div>
                 </div>
 
-                <!-- UFO Canvas (Right) -->
                 <div class="flex-1 bg-slate-900 rounded-3xl p-8 border-4 border-slate-800 flex flex-col items-center justify-center relative overflow-hidden h-[400px] lg:h-auto">
-                    <!-- Space bg -->
                     <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(#fbbf24 1px, transparent 1px); background-size: 30px 30px;"></div>
                     
                     <div id="ufo-container" class="z-10 text-9xl mb-8 animate-pulse drop-shadow-[0_0_30px_rgba(251,191,36,0.9)]">
@@ -362,9 +405,6 @@
     <div id="confetti-container"></div>
 
     <script>
-        // ==========================================
-        // SFX AUDIO ENGINE
-        // ==========================================
         const SFX = {
             ctx: null,
             init: () => {
@@ -377,8 +417,7 @@
             playTing: () => {
                 if(!SFX.ctx) return;
                 const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1200, SFX.ctx.currentTime);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1200, SFX.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(1800, SFX.ctx.currentTime + 0.1);
                 gain.gain.setValueAtTime(0.5, SFX.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, SFX.ctx.currentTime + 0.3);
@@ -388,8 +427,7 @@
             playExplosion: () => {
                 if(!SFX.ctx) return;
                 const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, SFX.ctx.currentTime);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, SFX.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(10, SFX.ctx.currentTime + 0.3);
                 gain.gain.setValueAtTime(0.6, SFX.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, SFX.ctx.currentTime + 0.4);
@@ -399,8 +437,7 @@
             playDrone: () => {
                 if(!SFX.ctx) return;
                 const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(50, SFX.ctx.currentTime);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(50, SFX.ctx.currentTime);
                 gain.gain.setValueAtTime(0, SFX.ctx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.3, SFX.ctx.currentTime + 0.5);
                 gain.gain.linearRampToValueAtTime(0, SFX.ctx.currentTime + 3.0);
@@ -410,8 +447,7 @@
             playIgnition: () => {
                 if(!SFX.ctx) return;
                 const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(50, SFX.ctx.currentTime);
+                osc.type = 'square'; osc.frequency.setValueAtTime(50, SFX.ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(600, SFX.ctx.currentTime + 1.5);
                 gain.gain.setValueAtTime(0, SFX.ctx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.5, SFX.ctx.currentTime + 0.2);
@@ -421,7 +457,6 @@
             }
         };
 
-        // Initialize animated stars
         const initStars = () => {
             const container = document.getElementById('stars-container');
             for(let i=0; i<30; i++) {
@@ -437,32 +472,25 @@
         };
         initStars();
 
-        // ==========================================
-        // CORE STATE & QUIZ
-        // ==========================================
-        const appState = {
-            activeTab: 0
-        };
+        const appState = { activeTab: 0 };
 
         const InitAI = {
             stopAll: () => {
                 Game1.stop();
-                Game2.reset();
+                Game2.resetTotal();
                 if(window.speechSynthesis) window.speechSynthesis.cancel();
             },
             switchTab: (index) => {
-                SFX.init();
-                InitAI.stopAll();
-                appState.activeTab = index;
+                SFX.init(); InitAI.stopAll(); appState.activeTab = index;
                 
                 document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-                    if(i === index) btn.classList.add('active');
-                    else btn.classList.remove('active');
+                    if(i === index) btn.classList.add('active'); else btn.classList.remove('active');
                 });
                 document.querySelectorAll('.view-section').forEach((view, i) => {
-                    if(i === index) view.classList.remove('hidden-view');
-                    else view.classList.add('hidden-view');
+                    if(i === index) view.classList.remove('hidden-view'); else view.classList.add('hidden-view');
                 });
+
+                if(index === 1) Game2.initTab(); // Init Game 2 specific states
             },
             showQuiz: () => {
                 const modal = document.getElementById('quiz-modal');
@@ -473,13 +501,11 @@
                     btn.className = "quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-slate-200 hover:border-orange-500 hover:bg-orange-50 font-bold text-slate-700 transition-all flex items-center text-xl shadow-sm";
                     btn.disabled = false;
                 });
-                
                 modal.classList.remove('hidden');
             },
             checkAnswer: (index, btn) => {
                 if (btn.disabled) return;
-                const feedback = document.getElementById('quiz-feedback');
-                SFX.init();
+                const feedback = document.getElementById('quiz-feedback'); SFX.init();
                 
                 if (index === appState.activeTab) {
                     btn.className = "quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-700 transition-all flex items-center text-xl shadow-md scale-[1.02]";
@@ -488,13 +514,10 @@
                     document.querySelectorAll('.quiz-option').forEach(b => { b.disabled = true; });
                     document.getElementById('quiz-next').classList.remove('hidden');
                     
-                    // Confetti
-                    const container = document.getElementById('confetti-container');
-                    container.innerHTML = '';
+                    const container = document.getElementById('confetti-container'); container.innerHTML = '';
                     const colors = ['#10b981', '#f59e0b', '#ea580c', '#8b5cf6', '#3b82f6'];
                     for(let i=0; i<80; i++) {
-                        let conf = document.createElement('div');
-                        conf.className = 'confetti';
+                        let conf = document.createElement('div'); conf.className = 'confetti';
                         conf.style.left = Math.random() * 100 + 'vw';
                         conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                         conf.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
@@ -515,32 +538,25 @@
         };
 
         // ==========================================
-        // GAME 1: COMPUTER VISION (Nose Track)
+        // GAME 1
         // ==========================================
         const Game1 = {
-            model: null, stream: null, ctx: null, reqId: null,
-            isRunning: false, mouseMode: false,
+            model: null, stream: null, ctx: null, reqId: null, isRunning: false, mouseMode: false,
             basket: { x: 320, width: 120, height: 25, color: '#f59e0b' },
             items: [], particles: [], score: 0, target: 10, time: 60, timerInterval: null,
-            canvas: document.getElementById('game-canvas'),
-            video: document.getElementById('webcam-video'),
+            canvas: document.getElementById('game-canvas'), video: document.getElementById('webcam-video'),
 
             start: async (useMouse) => {
-                SFX.init();
-                Game1.mouseMode = useMouse;
+                SFX.init(); Game1.mouseMode = useMouse;
                 document.getElementById('cv-status-icon').className = "fa-solid fa-spinner fa-spin text-6xl mb-4 text-orange-400";
                 
                 if(useMouse) {
                     Game1.canvas.classList.add('mouse-mode-canvas');
-                    Game1.canvas.width = 640; Game1.canvas.height = 480;
-                    Game1.ctx = Game1.canvas.getContext('2d');
-                    
+                    Game1.canvas.width = 640; Game1.canvas.height = 480; Game1.ctx = Game1.canvas.getContext('2d');
                     Game1.canvas.addEventListener('mousemove', (e) => {
-                        const rect = Game1.canvas.getBoundingClientRect();
-                        const scaleX = Game1.canvas.width / rect.width;
+                        const rect = Game1.canvas.getBoundingClientRect(); const scaleX = Game1.canvas.width / rect.width;
                         Game1.basket.x = (e.clientX - rect.left) * scaleX;
                     });
-                    
                     document.getElementById('cv-status').classList.add('hidden');
                     document.getElementById('game1-ui').classList.remove('hidden');
                     document.getElementById('g1-fallback-txt').classList.add('hidden');
@@ -554,8 +570,7 @@
                         Game1.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
                         Game1.video.srcObject = Game1.stream;
                         Game1.video.onloadedmetadata = () => {
-                            Game1.video.play();
-                            Game1.canvas.width = Game1.video.videoWidth; Game1.canvas.height = Game1.video.videoHeight;
+                            Game1.video.play(); Game1.canvas.width = Game1.video.videoWidth; Game1.canvas.height = Game1.video.videoHeight;
                             Game1.ctx = Game1.canvas.getContext('2d');
                             document.getElementById('cv-status').classList.add('hidden');
                             document.getElementById('game1-ui').classList.remove('hidden');
@@ -571,31 +586,24 @@
             resume: () => {
                 if (Game1.isRunning) return;
                 Game1.isRunning = true; Game1.score = 0; Game1.time = 60; Game1.items = []; Game1.particles = [];
-                document.getElementById('g1-score').innerText = Game1.score;
-                document.getElementById('g1-timer').innerText = Game1.time;
+                document.getElementById('g1-score').innerText = Game1.score; document.getElementById('g1-timer').innerText = Game1.time;
                 
                 clearInterval(Game1.timerInterval);
                 Game1.timerInterval = setInterval(() => {
-                    Game1.time--;
-                    document.getElementById('g1-timer').innerText = Game1.time;
-                    if(Game1.time <= 0) {
-                        Game1.stop(); InitAI.showQuiz();
-                    }
+                    Game1.time--; document.getElementById('g1-timer').innerText = Game1.time;
+                    if(Game1.time <= 0) { Game1.stop(); InitAI.showQuiz(); }
                 }, 1000);
-
                 Game1.RenderLoop();
             },
             stop: () => {
-                Game1.isRunning = false;
-                clearInterval(Game1.timerInterval);
+                Game1.isRunning = false; clearInterval(Game1.timerInterval);
                 if(Game1.reqId) cancelAnimationFrame(Game1.reqId);
                 if(Game1.stream) { Game1.stream.getTracks().forEach(t => t.stop()); Game1.stream = null; }
             },
             createParticles: (x, y, color) => {
                 for(let i=0; i<15; i++) {
                     Game1.particles.push({
-                        x: x, y: y,
-                        vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
+                        x: x, y: y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
                         life: 1.0, color: color, size: Math.random() * 4 + 2
                     });
                 }
@@ -608,166 +616,270 @@
                     Game1.ctx.drawImage(Game1.video, 0, 0, Game1.canvas.width, Game1.canvas.height);
                     const preds = await Game1.model.estimateFaces(Game1.video, false);
                     if (preds.length > 0) {
-                        const nose = preds[0].landmarks[2];
-                        const targetX = Game1.canvas.width - nose[0]; // Mirror mapping
-                        Game1.basket.x += (targetX - Game1.basket.x) * 0.25; // Lerp smoothing
-                        
-                        // Draw nose dot
+                        const nose = preds[0].landmarks[2]; const targetX = Game1.canvas.width - nose[0];
+                        Game1.basket.x += (targetX - Game1.basket.x) * 0.25; 
                         Game1.ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
                         Game1.ctx.beginPath(); Game1.ctx.arc(nose[0], nose[1], 8, 0, 2*Math.PI); Game1.ctx.fill();
                     }
                 } else {
-                    Game1.ctx.fillStyle = '#0f172a'; // dark bg for mouse mode
-                    Game1.ctx.fillRect(0, 0, Game1.canvas.width, Game1.canvas.height);
+                    Game1.ctx.fillStyle = '#0f172a'; Game1.ctx.fillRect(0, 0, Game1.canvas.width, Game1.canvas.height);
                 }
 
-                // Spawning Balls
                 if(Math.random() < 0.03 + (Game1.score * 0.002)) {
                     const colors = ['#3b82f6', '#ec4899', '#10b981', '#8b5cf6'];
                     Game1.items.push({
-                        x: Math.random() * (Game1.canvas.width - 40) + 20, y: -30, 
-                        radius: Math.random() * 15 + 10,
-                        speed: Math.random() * 3 + 3,
-                        color: colors[Math.floor(Math.random()*colors.length)]
+                        x: Math.random() * (Game1.canvas.width - 40) + 20, y: -30, radius: Math.random() * 15 + 10,
+                        speed: Math.random() * 3 + 3, color: colors[Math.floor(Math.random()*colors.length)]
                     });
                 }
 
-                // Draw Basket
                 let bX = Game1.mouseMode ? Game1.basket.x : (Game1.canvas.width - Game1.basket.x);
-                let basketDrawX = bX - Game1.basket.width/2;
-                let basketDrawY = Game1.canvas.height - Game1.basket.height - 20;
+                let basketDrawX = bX - Game1.basket.width/2; let basketDrawY = Game1.canvas.height - Game1.basket.height - 20;
                 
                 Game1.ctx.fillStyle = Game1.basket.color;
-                // Draw rounded rect basket
                 Game1.ctx.beginPath(); Game1.ctx.roundRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height, 10); Game1.ctx.fill();
                 Game1.ctx.fillStyle = '#fff'; Game1.ctx.font = 'bold 14px Inter'; Game1.ctx.textAlign='center';
                 Game1.ctx.fillText("GIỎ HỨNG QUÀ", bX, basketDrawY + 17);
 
-                // Items
                 for(let i=Game1.items.length-1; i>=0; i--) {
                     let it = Game1.items[i]; it.y += it.speed;
                     let vX = Game1.mouseMode ? it.x : (Game1.canvas.width - it.x);
                     
-                    // Gradient ball
                     let grd = Game1.ctx.createRadialGradient(vX-5, it.y-5, 2, vX, it.y, it.radius);
                     grd.addColorStop(0, "white"); grd.addColorStop(1, it.color);
                     Game1.ctx.fillStyle = grd;
                     Game1.ctx.beginPath(); Game1.ctx.arc(vX, it.y, it.radius, 0, 2*Math.PI); Game1.ctx.fill();
 
-                    // Collision
                     if(it.y+it.radius >= basketDrawY && it.y <= basketDrawY+Game1.basket.height) {
                         if(Math.abs(it.x - Game1.basket.x) < Game1.basket.width/2 + it.radius) {
-                            Game1.score++; 
-                            document.getElementById('g1-score').innerText = Game1.score;
-                            SFX.playTing();
-                            Game1.createParticles(vX, it.y, it.color);
+                            Game1.score++; document.getElementById('g1-score').innerText = Game1.score;
+                            SFX.playTing(); Game1.createParticles(vX, it.y, it.color);
                             Game1.items.splice(i,1);
                             
-                            if(Game1.score >= Game1.target) {
-                                Game1.stop();
-                                setTimeout(() => InitAI.showQuiz(), 1000);
-                                return;
-                            }
+                            if(Game1.score >= Game1.target) { Game1.stop(); setTimeout(() => InitAI.showQuiz(), 1000); return; }
                             continue;
                         }
                     }
                     if(it.y > Game1.canvas.height+50) Game1.items.splice(i,1);
                 }
 
-                // Draw Particles
                 for(let i=Game1.particles.length-1; i>=0; i--) {
                     let p = Game1.particles[i];
                     p.x += p.vx; p.y += p.vy; p.life -= 0.05;
                     if(p.life <= 0) { Game1.particles.splice(i,1); continue; }
-                    Game1.ctx.globalAlpha = p.life;
-                    Game1.ctx.fillStyle = p.color;
+                    Game1.ctx.globalAlpha = p.life; Game1.ctx.fillStyle = p.color;
                     Game1.ctx.beginPath(); Game1.ctx.arc(p.x, p.y, p.size, 0, 2*Math.PI); Game1.ctx.fill();
                     Game1.ctx.globalAlpha = 1.0;
                 }
-
                 Game1.reqId = requestAnimationFrame(Game1.RenderLoop);
             }
         };
 
         // ==========================================
-        // GAME 2: SPEECH TO TEXT (MAGIC DUEL)
+        // GAME 2: SPEECH TO TEXT (OVERHAUL)
         // ==========================================
         const Game2 = {
-            recog: null, botInterval: null,
-            studentHP: 100, botHP: 100,
+            recog: null, botInterval: null, state: 'init',
+            studentHP: 100, botHP: 100, difficulty: 'easy', numItems: 1,
             words: [
                 { word: "quả táo", emoji: "🍎" }, { word: "con mèo", emoji: "🐱" }, 
-                { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" }
+                { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" },
+                { word: "con chó", emoji: "🐶" }, { word: "quả chuối", emoji: "🍌" },
+                { word: "dưa hấu", emoji: "🍉" }, { word: "xe đạp", emoji: "🚲" },
+                { word: "bánh pizza", emoji: "🍕" }, { word: "hoa hướng dương", emoji: "🌻" }
             ],
-            currentTarget: null,
-            
-            reset: () => {
+            currentTargets: [],
+
+            initTab: () => {
+                // When entering tab 2, show tutorial.
+                document.getElementById('g2-tutorial-overlay').classList.remove('hidden');
+                document.getElementById('g2-start-overlay').classList.add('hidden');
+                document.getElementById('g2-countdown-overlay').classList.add('hidden');
+                document.getElementById('btn-mic').disabled = true;
+                Game2.resetUI();
+                Game2.state = 'tutorial';
+            },
+            closeTutorial: () => {
+                document.getElementById('g2-tutorial-overlay').classList.add('hidden');
+                document.getElementById('g2-start-overlay').classList.remove('hidden');
+                Game2.state = 'lobby';
+            },
+            selectDiff: (level) => {
+                document.getElementById('btn-diff-easy').classList.remove('border-white', 'shadow-[0_0_15px_#10b981]', 'bg-emerald-500');
+                document.getElementById('btn-diff-easy').classList.add('border-transparent', 'bg-slate-700');
+                document.getElementById('btn-diff-medium').classList.remove('border-white', 'shadow-[0_0_15px_#10b981]', 'bg-emerald-500');
+                document.getElementById('btn-diff-medium').classList.add('border-transparent', 'bg-slate-700');
+                document.getElementById('btn-diff-hard').classList.remove('border-white', 'shadow-[0_0_15px_#10b981]', 'bg-emerald-500');
+                document.getElementById('btn-diff-hard').classList.add('border-transparent', 'bg-slate-700');
+                
+                const btn = document.getElementById(`btn-diff-${level}`);
+                btn.classList.add('border-white', 'shadow-[0_0_15px_#10b981]', 'bg-emerald-500');
+                btn.classList.remove('border-transparent', 'bg-slate-700');
+                
+                Game2.difficulty = level;
+                if(level === 'easy') Game2.numItems = 1;
+                else if(level === 'medium') Game2.numItems = 2;
+                else Game2.numItems = 3;
+            },
+            startCountdown: () => {
+                document.getElementById('g2-start-overlay').classList.add('hidden');
+                document.getElementById('g2-countdown-overlay').classList.remove('hidden');
+                Game2.state = 'countdown';
+                
+                let count = 3;
+                const txt = document.getElementById('g2-countdown-text');
+                txt.innerText = count;
+                SFX.playTing();
+                
+                const inter = setInterval(() => {
+                    count--;
+                    if(count > 0) {
+                        txt.innerText = count;
+                        SFX.playTing();
+                    } else if(count === 0) {
+                        txt.innerText = "CHIẾN!";
+                        SFX.playExplosion();
+                    } else {
+                        clearInterval(inter);
+                        document.getElementById('g2-countdown-overlay').classList.add('hidden');
+                        Game2.startGame();
+                    }
+                }, 1000);
+            },
+            resetUI: () => {
                 Game2.studentHP = 100; Game2.botHP = 100;
                 Game2.updateHP('student', 100); Game2.updateHP('bot', 100);
                 clearInterval(Game2.botInterval);
                 document.getElementById('student-bubble').classList.remove('opacity-100');
                 document.getElementById('student-bubble').classList.add('opacity-0');
+                document.getElementById('emoji-container').innerHTML = '';
+            },
+            resetTotal: () => {
+                Game2.state = 'init';
+                clearInterval(Game2.botInterval);
+                Game2.stopListen();
+            },
+            startGame: () => {
+                Game2.state = 'playing';
+                document.getElementById('btn-mic').disabled = false;
                 Game2.newTurn();
                 
                 Game2.botInterval = setInterval(() => {
-                    if(Game2.studentHP > 0 && Game2.botHP > 0) {
+                    if(Game2.state === 'playing' && Game2.studentHP > 0 && Game2.botHP > 0) {
                         Game2.botAttack();
                     }
-                }, 6000); // bot counter attacks every 6s
+                }, 6000);
             },
             updateHP: (who, val) => {
-                // High fidelity HP: red drops instantly, yellow drops slowly
                 document.getElementById(`${who}-hp-red`).style.width = val + '%';
                 setTimeout(() => {
                     document.getElementById(`${who}-hp-yellow`).style.width = val + '%';
-                }, 100); // short delay to start the smooth yellow transition
+                }, 100);
             },
             newTurn: () => {
-                if(Game2.studentHP <= 0 || Game2.botHP <= 0) return;
-                Game2.currentTarget = Game2.words[Math.floor(Math.random() * Game2.words.length)];
-                document.getElementById('student-emoji').innerText = Game2.currentTarget.emoji;
+                if(Game2.studentHP <= 0 || Game2.botHP <= 0 || Game2.state !== 'playing') return;
+                
+                Game2.currentTargets = [];
+                // Pick unique random words
+                let tempWords = [...Game2.words];
+                for(let i=0; i<Game2.numItems; i++) {
+                    let idx = Math.floor(Math.random() * tempWords.length);
+                    let w = tempWords.splice(idx, 1)[0];
+                    
+                    let anim = '';
+                    if(Game2.difficulty === 'hard') {
+                        const anims = ['anim-circle', 'anim-eight', 'anim-bounce-alt'];
+                        anim = anims[Math.floor(Math.random()*anims.length)];
+                    }
+                    
+                    Game2.currentTargets.push({
+                        word: w.word, emoji: w.emoji, solved: false, animClass: anim
+                    });
+                }
+                
+                Game2.renderBubble();
                 document.getElementById('student-bubble').classList.remove('opacity-0');
                 document.getElementById('student-bubble').classList.add('opacity-100');
                 document.getElementById('stt-feedback').innerText = "";
+            },
+            renderBubble: () => {
+                const container = document.getElementById('emoji-container');
+                container.innerHTML = '';
+                
+                // For easy/medium just flex gap. For hard, we use absolute positioning slightly spread out to allow animations room to move.
+                if(Game2.difficulty === 'hard') {
+                    const positions = [ {l:'10%', t:'10%'}, {l:'40%', t:'20%'}, {l:'70%', t:'5%'} ];
+                    Game2.currentTargets.forEach((t, i) => {
+                        let span = document.createElement('span');
+                        span.className = `emoji-item ${t.animClass} ${t.solved ? 'emoji-solved':''}`;
+                        span.style.left = positions[i].l; span.style.top = positions[i].t;
+                        span.innerText = t.emoji;
+                        container.appendChild(span);
+                    });
+                } else {
+                    Game2.currentTargets.forEach(t => {
+                        let span = document.createElement('span');
+                        span.className = `emoji-item relative ${t.solved ? 'emoji-solved':''}`;
+                        span.innerText = t.emoji;
+                        container.appendChild(span);
+                    });
+                }
             },
             initSTT: () => {
                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if(!SR) return false;
                 Game2.recog = new SR(); Game2.recog.lang = 'vi-VN';
+                Game2.recog.continuous = true; 
+                Game2.recog.interimResults = true;
+                
                 Game2.recog.onresult = (e) => {
-                    const text = e.results[0][0].transcript;
-                    document.getElementById('stt-feedback').innerText = `Nhận diện: "${text}"`;
-                    if(e.results[0].isFinal) Game2.checkSpell(text);
+                    let text = '';
+                    for (let i = e.resultIndex; i < e.results.length; ++i) {
+                        text += e.results[i][0].transcript;
+                    }
+                    document.getElementById('stt-feedback').innerText = `Đang nghe: "${text}"`;
+                    Game2.checkSpell(text);
                 };
                 Game2.recog.onend = () => document.getElementById('btn-mic').classList.remove('scale-110');
                 return true;
             },
             startListen: () => {
+                if(Game2.state !== 'playing') return;
                 SFX.init();
-                if(!Game2.recog && !Game2.initSTT()) { alert("Trình duyệt không hỗ trợ. Vui lòng dùng khung nhập liệu."); document.getElementById('g2-fallback-area').classList.remove('hidden'); return; }
+                if(!Game2.recog && !Game2.initSTT()) { alert("Trình duyệt không hỗ trợ Web Speech API."); return; }
                 try { Game2.recog.start(); document.getElementById('btn-mic').classList.add('scale-110'); } catch(e){}
             },
             stopListen: () => {
                 if(Game2.recog) try { Game2.recog.stop(); } catch(e){}
             },
             checkSpell: (text) => {
+                if(Game2.state !== 'playing') return;
                 SFX.init();
                 const clean = text.toLowerCase().trim();
-                const targetWord = Game2.currentTarget.word.toLowerCase();
-                
-                // Flexible inclusion logic
-                let isMatch = false;
-                const coreWord = targetWord.split(" ")[1] || targetWord; // extract core noun roughly
-                if (clean.includes(targetWord) || clean.includes(coreWord)) isMatch = true;
+                let newlySolved = false;
 
-                if(isMatch) {
-                    Game2.studentAttack();
-                } else {
-                    document.getElementById('stt-feedback').innerText = "Chưa đúng từ khóa! Hãy thử lại.";
+                Game2.currentTargets.forEach(target => {
+                    if(!target.solved) {
+                        const coreWord = target.word.split(" ")[1] || target.word; 
+                        if (clean.includes(target.word.toLowerCase()) || clean.includes(coreWord)) {
+                            target.solved = true;
+                            newlySolved = true;
+                        }
+                    }
+                });
+
+                if(newlySolved) {
+                    Game2.renderBubble();
+                    
+                    const allSolved = Game2.currentTargets.every(t => t.solved);
+                    if(allSolved) {
+                        document.getElementById('stt-feedback').innerText = "Thần chú chính xác toàn bộ!";
+                        Game2.studentAttack();
+                    }
                 }
             },
             studentAttack: () => {
-                document.getElementById('stt-feedback').innerText = "Thần chú chính xác!";
+                Game2.stopListen();
                 document.getElementById('student-bubble').classList.remove('opacity-100');
                 document.getElementById('student-bubble').classList.add('opacity-0');
                 
@@ -784,14 +896,17 @@
                     proj.className = "magic-projectile"; 
                     
                     if(Game2.botHP <= 0) {
+                        Game2.state = 'done';
                         clearInterval(Game2.botInterval);
                         setTimeout(() => InitAI.showQuiz(), 1500);
                     } else {
-                        setTimeout(Game2.newTurn, 1500);
+                        // Immediately generate new turn without delay
+                        Game2.newTurn();
                     }
-                }, 500);
+                }, 400); // sync with shootBot animation duration
             },
             botAttack: () => {
+                if(Game2.state !== 'playing') return;
                 SFX.playExplosion();
                 const proj = document.getElementById('projectile');
                 proj.className = "magic-projectile shoot-student";
@@ -805,11 +920,12 @@
                     proj.className = "magic-projectile";
                     
                     if(Game2.studentHP <= 0) {
+                        Game2.state = 'done';
                         clearInterval(Game2.botInterval);
-                        alert("Học sinh đã hết máu! Game sẽ chơi lại.");
-                        Game2.reset();
+                        alert("Học sinh đã hết máu! Game sẽ đưa bạn về phòng chờ.");
+                        Game2.initTab(); // go back to tutorial
                     }
-                }, 500);
+                }, 400); // sync with shootStudent animation duration
             }
         };
 
@@ -852,7 +968,6 @@
                 }
             },
             checkWin: (rate, pitch) => {
-                // High & Fast OR Deep & Slow
                 if ((rate > 1.6 && pitch > 1.6) || (rate < 0.6 && pitch < 0.6)) {
                     Game3.battery += 50;
                     document.getElementById('battery-fill').style.width = Game3.battery + '%';
