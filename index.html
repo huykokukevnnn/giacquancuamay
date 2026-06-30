@@ -63,11 +63,12 @@
         .anim-attack-right { animation: attack-right 0.5s ease-out; }
         .anim-attack-left { animation: attack-left 0.5s ease-out; }
 
-        @keyframes float-circle { 0% { transform: rotate(0deg) translateX(50px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); } }
-        @keyframes float-eight { 0% { transform: translate(0, 0); } 25% { transform: translate(60px, -40px); } 50% { transform: translate(0, 0); } 75% { transform: translate(-60px, 40px); } 100% { transform: translate(0, 0); } }
-        .anim-circle { animation: float-circle 1.5s linear infinite; }
-        .anim-eight { animation: float-eight 2s ease-in-out infinite; }
-        .anim-bounce-alt { animation: bounce 1s infinite alternate; }
+        @keyframes float-circle { 0% { transform: rotate(0deg) translateX(30px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(30px) rotate(-360deg); } }
+        @keyframes float-eight { 0% { transform: translate(0, 0); } 25% { transform: translate(40px, -20px); } 50% { transform: translate(0, 0); } 75% { transform: translate(-40px, 20px); } 100% { transform: translate(0, 0); } }
+        @keyframes float-updown { 0% { transform: translateY(0); } 100% { transform: translateY(-20px); } }
+        .anim-circle { animation: float-circle 3s linear infinite; }
+        .anim-eight { animation: float-eight 4s ease-in-out infinite; }
+        .anim-bounce-alt { animation: float-updown 2.5s ease-in-out infinite alternate; }
         .emoji-item { font-size: 3.5rem; transition: all 0.3s; display: inline-block; position: absolute; filter: drop-shadow(2px 2px 0px #1e293b); }
         .emoji-solved { opacity: 0.3 !important; filter: grayscale(100%) !important; transform: scale(0.8) !important; animation: none !important; }
 
@@ -691,7 +692,7 @@
             },
             studentAttack: () => {
                 Game2.isAttacking = true; let now = Date.now();
-                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 3000)) Game2.streak++; else Game2.streak = 1;
+                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 7000)) Game2.streak++; else Game2.streak = 1;
                 Game2.lastSolveTime = Date.now(); 
                 
                 if (Game2.streak > 1) {
@@ -714,7 +715,7 @@
                     
                     Game2.attackCount++;
                     if (Game2.difficulty === 'hard' && Game2.attackCount % 3 === 0) {
-                        Game2.studentHP = Math.min(100, Game2.studentHP + 10);
+                        Game2.studentHP = Math.min(100, Game2.studentHP + 20);
                         Game2.updateHP('student', Game2.studentHP);
                         SFX.playHeal();
                     }
