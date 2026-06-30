@@ -671,24 +671,34 @@
                 if(newlySolved) { Game2.renderBubble(); if(Game2.currentTargets.every(t => t.solved)) { document.getElementById('stt-feedback').innerText = "Thần chú chính xác!"; Game2.studentAttack(); } }
             },
             startPhase2: () => {
-                Game2.phase = 2; Game2.botHP = 150; Game2.maxBotHP = 150;
+                Game2.state = 'transition';
+                document.getElementById('stt-feedback').innerText = "⚠️ CẢNH BÁO: BOSS ĐANG TỚI! ⚠️";
+                document.getElementById('stt-feedback').className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red animate-pulse";
+                SFX.playDrone();
                 
-                // Heal student +15
-                Game2.studentHP = Math.min(100, Game2.studentHP + 15);
-                Game2.updateHP('student', Game2.studentHP);
-                SFX.playHeal();
-                
-                // Boss UI update
-                document.getElementById('bot-name-label').innerText = 'SIÊU HẮC PHÁP SƯ AI';
-                document.getElementById('bot-char').classList.add('boss-mode');
-                document.getElementById('boss-badge').classList.add('show');
-                document.getElementById('bot-body').setAttribute('fill', '#4c1d95'); // Tím sậm
-                document.getElementById('bot-head').setAttribute('fill', '#7e22ce');
-                document.getElementById('duel-arena').classList.add('animate-shake');
-                setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 1000);
-                
-                Game2.updateHP('bot', Game2.botHP);
-                setTimeout(() => Game2.newTurn(), 1500);
+                setTimeout(() => {
+                    Game2.state = 'playing';
+                    document.getElementById('stt-feedback').innerText = "";
+                    document.getElementById('stt-feedback').className = "font-mono font-bold text-lg h-6 text-center text-sotbf-dark";
+                    Game2.phase = 2; Game2.botHP = 150; Game2.maxBotHP = 150;
+                    
+                    // Heal student +15
+                    Game2.studentHP = Math.min(100, Game2.studentHP + 15);
+                    Game2.updateHP('student', Game2.studentHP);
+                    SFX.playHeal();
+                    
+                    // Boss UI update
+                    document.getElementById('bot-name-label').innerText = 'SIÊU HẮC PHÁP SƯ AI';
+                    document.getElementById('bot-char').classList.add('boss-mode');
+                    document.getElementById('boss-badge').classList.add('show');
+                    document.getElementById('bot-body').setAttribute('fill', '#4c1d95'); // Tím sậm
+                    document.getElementById('bot-head').setAttribute('fill', '#7e22ce');
+                    document.getElementById('duel-arena').classList.add('animate-shake');
+                    setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 1000);
+                    
+                    Game2.updateHP('bot', Game2.botHP);
+                    setTimeout(() => Game2.newTurn(), 1500);
+                }, 2000);
             },
             studentAttack: () => {
                 Game2.isAttacking = true; let now = Date.now();
@@ -737,7 +747,7 @@
                 const proj = document.getElementById('projectile'); proj.className = "magic-projectile shoot-student";
                 setTimeout(() => {
                     document.getElementById('duel-arena').classList.add('animate-shake'); setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
-                    let dmg = Game2.phase === 2 ? 20 : 15; // Boss đánh đau hơn 1 tí
+                    let dmg = Game2.phase === 2 ? 15 : 10; // Boss đánh đau hơn 1 tí
                     Game2.studentHP = Math.max(0, Game2.studentHP - dmg); Game2.updateHP('student', Game2.studentHP);
                     proj.className = "magic-projectile";
                     if(Game2.studentHP <= 0) {
