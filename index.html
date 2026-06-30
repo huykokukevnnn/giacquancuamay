@@ -97,14 +97,14 @@
 
         /* Chaotic Animations for Game 2 Hard Mode */
         @keyframes float-circle {
-            0% { transform: rotate(0deg) translateX(15px) rotate(0deg); }
-            100% { transform: rotate(360deg) translateX(15px) rotate(-360deg); }
+            0% { transform: rotate(0deg) translateX(50px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
         }
         @keyframes float-eight {
             0% { transform: translate(0, 0); }
-            25% { transform: translate(20px, -15px); }
+            25% { transform: translate(60px, -40px); }
             50% { transform: translate(0, 0); }
-            75% { transform: translate(-20px, 15px); }
+            75% { transform: translate(-60px, 40px); }
             100% { transform: translate(0, 0); }
         }
         .anim-circle { animation: float-circle 1.5s linear infinite; }
@@ -115,7 +115,7 @@
             font-size: 3.5rem; 
             transition: all 0.3s;
             display: inline-block;
-            position: absolute; /* Let JS handle absolute positions in the bubble */
+            position: absolute; 
         }
         .emoji-solved {
             opacity: 0.2 !important;
@@ -233,6 +233,9 @@
             <!-- Duel Arena -->
             <div id="duel-arena" class="w-full relative bg-slate-900 rounded-3xl p-6 overflow-hidden border-4 border-slate-800 h-[500px] flex justify-between items-center bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80')] bg-cover bg-center">
                 
+                <!-- Combo Display -->
+                <div id="combo-display" class="absolute top-10 left-1/2 transform -translate-x-1/2 text-4xl font-black text-amber-400 opacity-0 transition-opacity drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] z-[45] pointer-events-none">Combo x1! 🔥</div>
+
                 <!-- Overlays -->
                 <div id="g2-tutorial-overlay" class="absolute inset-0 bg-slate-900/90 z-[60] flex flex-col items-center justify-center p-6 text-center backdrop-blur-md">
                     <h3 class="text-4xl font-black text-emerald-400 mb-6 drop-shadow-lg">Cách chơi</h3>
@@ -270,27 +273,51 @@
                         <div id="student-hp-red" class="absolute top-0 left-0 h-full bg-emerald-500 w-full transition-all duration-200 ease-out"></div>
                     </div>
                     
-                    <div id="student-bubble" class="mt-8 mb-2 bg-white rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border-4 border-emerald-400 relative opacity-0 transition-opacity w-[200px] h-[100px] flex items-center justify-center">
+                    <div id="student-bubble" class="mt-4 mb-2 bg-white rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border-4 border-emerald-400 relative opacity-0 transition-opacity w-[280px] h-[130px] flex items-center justify-center">
                         <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[14px] border-t-emerald-400"></div>
                         <div id="emoji-container" class="relative w-full h-full flex items-center justify-center">
                             <!-- Emojis appended here -->
                         </div>
                     </div>
 
-                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(16,185,129,0.8)] mt-4">🧙‍♂️</div>
+                    <!-- CSS Character: Student -->
+                    <div class="relative w-32 h-40 animate-bounce mt-2">
+                        <svg viewBox="0 0 100 120" class="w-full h-full drop-shadow-[0_0_15px_rgba(16,185,129,0.8)]">
+                            <path d="M 50 10 L 20 110 L 80 110 Z" fill="#10b981"/>
+                            <circle cx="50" cy="25" r="15" fill="#fde047"/>
+                            <path d="M 20 40 L 0 80 L 10 85 L 30 50 Z" fill="#34d399"/>
+                            <path d="M 80 40 L 100 80 L 90 85 L 70 50 Z" fill="#34d399"/>
+                            <path d="M 0 30 L 100 30 L 50 0 Z" fill="#047857"/>
+                            <rect x="0" y="60" width="5" height="60" fill="#78350f" transform="rotate(-20 5 60)"/>
+                            <circle cx="-15" cy="45" r="8" fill="#a7f3d0" class="animate-pulse"/>
+                        </svg>
+                    </div>
                 </div>
 
                 <!-- BOT SORCERER (RIGHT) -->
                 <div class="relative z-20 flex flex-col items-center w-1/3">
                     <div class="w-full flex justify-end mb-1">
-                        <span class="text-white font-bold text-sm">Pháp Sư Bot AI</span>
+                        <span class="text-white font-bold text-sm">Hắc Pháp Sư AI</span>
                     </div>
                     <div class="w-full h-5 bg-slate-800 rounded-full overflow-hidden relative border-2 border-slate-600">
                         <div id="bot-hp-yellow" class="absolute top-0 right-0 h-full bg-yellow-400 w-full transition-all duration-700 ease-out origin-right"></div>
                         <div id="bot-hp-red" class="absolute top-0 right-0 h-full bg-crimson-500 w-full transition-all duration-200 ease-out origin-right"></div>
                     </div>
 
-                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] mt-32">🤖</div>
+                    <!-- CSS Character: Dark Mage -->
+                    <div class="relative w-32 h-40 animate-bounce mt-[160px]">
+                        <svg viewBox="0 0 100 120" class="w-full h-full drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]">
+                            <path d="M 50 10 L 15 110 L 85 110 Z" fill="#8b5cf6"/>
+                            <circle cx="50" cy="25" r="15" fill="#d1d5db"/>
+                            <circle cx="43" cy="22" r="3" fill="#dc2626"/>
+                            <circle cx="57" cy="22" r="3" fill="#dc2626"/>
+                            <path d="M 20 40 L -5 70 L 5 80 L 30 50 Z" fill="#7c3aed"/>
+                            <path d="M 80 40 L 105 70 L 95 80 L 70 50 Z" fill="#7c3aed"/>
+                            <path d="M 10 30 L 90 30 L 50 -10 Z" fill="#4c1d95"/>
+                            <rect x="95" y="60" width="6" height="70" fill="#1f2937" transform="rotate(20 95 60)"/>
+                            <circle cx="115" cy="40" r="8" fill="#dc2626" class="animate-pulse"/>
+                        </svg>
+                    </div>
                 </div>
 
             </div>
@@ -490,7 +517,7 @@
                     if(i === index) view.classList.remove('hidden-view'); else view.classList.add('hidden-view');
                 });
 
-                if(index === 1) Game2.initTab(); // Init Game 2 specific states
+                if(index === 1) Game2.initTab();
             },
             showQuiz: () => {
                 const modal = document.getElementById('quiz-modal');
@@ -681,6 +708,7 @@
         const Game2 = {
             recog: null, botInterval: null, state: 'init',
             studentHP: 100, botHP: 100, difficulty: 'easy', numItems: 1,
+            streak: 0, lastSolveTime: 0,
             words: [
                 { word: "quả táo", emoji: "🍎" }, { word: "con mèo", emoji: "🐱" }, 
                 { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" },
@@ -691,10 +719,10 @@
             currentTargets: [],
 
             initTab: () => {
-                // When entering tab 2, show tutorial.
                 document.getElementById('g2-tutorial-overlay').classList.remove('hidden');
                 document.getElementById('g2-start-overlay').classList.add('hidden');
                 document.getElementById('g2-countdown-overlay').classList.add('hidden');
+                document.getElementById('combo-display').classList.add('opacity-0');
                 document.getElementById('btn-mic').disabled = true;
                 Game2.resetUI();
                 Game2.state = 'tutorial';
@@ -748,6 +776,7 @@
             },
             resetUI: () => {
                 Game2.studentHP = 100; Game2.botHP = 100;
+                Game2.streak = 0; Game2.lastSolveTime = 0;
                 Game2.updateHP('student', 100); Game2.updateHP('bot', 100);
                 clearInterval(Game2.botInterval);
                 document.getElementById('student-bubble').classList.remove('opacity-100');
@@ -780,7 +809,6 @@
                 if(Game2.studentHP <= 0 || Game2.botHP <= 0 || Game2.state !== 'playing') return;
                 
                 Game2.currentTargets = [];
-                // Pick unique random words
                 let tempWords = [...Game2.words];
                 for(let i=0; i<Game2.numItems; i++) {
                     let idx = Math.floor(Math.random() * tempWords.length);
@@ -791,10 +819,7 @@
                         const anims = ['anim-circle', 'anim-eight', 'anim-bounce-alt'];
                         anim = anims[Math.floor(Math.random()*anims.length)];
                     }
-                    
-                    Game2.currentTargets.push({
-                        word: w.word, emoji: w.emoji, solved: false, animClass: anim
-                    });
+                    Game2.currentTargets.push({ word: w.word, emoji: w.emoji, solved: false, animClass: anim });
                 }
                 
                 Game2.renderBubble();
@@ -806,9 +831,8 @@
                 const container = document.getElementById('emoji-container');
                 container.innerHTML = '';
                 
-                // For easy/medium just flex gap. For hard, we use absolute positioning slightly spread out to allow animations room to move.
                 if(Game2.difficulty === 'hard') {
-                    const positions = [ {l:'10%', t:'10%'}, {l:'40%', t:'20%'}, {l:'70%', t:'5%'} ];
+                    const positions = [ {l:'10%', t:'10%'}, {l:'45%', t:'20%'}, {l:'80%', t:'5%'} ];
                     Game2.currentTargets.forEach((t, i) => {
                         let span = document.createElement('span');
                         span.className = `emoji-item ${t.animClass} ${t.solved ? 'emoji-solved':''}`;
@@ -829,14 +853,11 @@
                 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if(!SR) return false;
                 Game2.recog = new SR(); Game2.recog.lang = 'vi-VN';
-                Game2.recog.continuous = true; 
-                Game2.recog.interimResults = true;
+                Game2.recog.continuous = true; Game2.recog.interimResults = true;
                 
                 Game2.recog.onresult = (e) => {
                     let text = '';
-                    for (let i = e.resultIndex; i < e.results.length; ++i) {
-                        text += e.results[i][0].transcript;
-                    }
+                    for (let i = e.resultIndex; i < e.results.length; ++i) { text += e.results[i][0].transcript; }
                     document.getElementById('stt-feedback').innerText = `Đang nghe: "${text}"`;
                     Game2.checkSpell(text);
                 };
@@ -862,15 +883,13 @@
                     if(!target.solved) {
                         const coreWord = target.word.split(" ")[1] || target.word; 
                         if (clean.includes(target.word.toLowerCase()) || clean.includes(coreWord)) {
-                            target.solved = true;
-                            newlySolved = true;
+                            target.solved = true; newlySolved = true;
                         }
                     }
                 });
 
                 if(newlySolved) {
                     Game2.renderBubble();
-                    
                     const allSolved = Game2.currentTargets.every(t => t.solved);
                     if(allSolved) {
                         document.getElementById('stt-feedback').innerText = "Thần chú chính xác toàn bộ!";
@@ -880,6 +899,29 @@
             },
             studentAttack: () => {
                 Game2.stopListen();
+                let now = Date.now();
+                
+                // Combo Logic
+                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 3000)) {
+                    Game2.streak++;
+                } else {
+                    Game2.streak = 1;
+                }
+                Game2.lastSolveTime = Date.now(); // update time for next streak calculation
+                
+                // Visual Combo
+                if (Game2.streak > 1) {
+                    let cd = document.getElementById('combo-display');
+                    cd.innerText = `Combo x${Game2.streak}! 🔥`;
+                    cd.classList.remove('opacity-0', 'scale-100');
+                    cd.classList.add('opacity-100', 'scale-125');
+                    SFX.playTing();
+                    setTimeout(() => {
+                        cd.classList.remove('scale-125'); cd.classList.add('scale-100');
+                        setTimeout(() => cd.classList.add('opacity-0'), 1000);
+                    }, 300);
+                }
+
                 document.getElementById('student-bubble').classList.remove('opacity-100');
                 document.getElementById('student-bubble').classList.add('opacity-0');
                 
@@ -891,23 +933,28 @@
                     document.getElementById('duel-arena').classList.add('animate-shake');
                     setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
                     
-                    Game2.botHP = Math.max(0, Game2.botHP - 25);
+                    // Add extra damage based on streak
+                    let dmg = 25 + (Game2.streak - 1) * 5;
+                    Game2.botHP = Math.max(0, Game2.botHP - dmg);
                     Game2.updateHP('bot', Game2.botHP);
                     proj.className = "magic-projectile"; 
                     
                     if(Game2.botHP <= 0) {
-                        Game2.state = 'done';
-                        clearInterval(Game2.botInterval);
+                        Game2.state = 'done'; clearInterval(Game2.botInterval);
                         setTimeout(() => InitAI.showQuiz(), 1500);
                     } else {
-                        // Immediately generate new turn without delay
                         Game2.newTurn();
                     }
-                }, 400); // sync with shootBot animation duration
+                }, 400); 
             },
             botAttack: () => {
                 if(Game2.state !== 'playing') return;
                 SFX.playExplosion();
+                
+                // Bot attacks reset streak
+                Game2.streak = 0;
+                Game2.lastSolveTime = 0;
+
                 const proj = document.getElementById('projectile');
                 proj.className = "magic-projectile shoot-student";
                 
@@ -920,12 +967,11 @@
                     proj.className = "magic-projectile";
                     
                     if(Game2.studentHP <= 0) {
-                        Game2.state = 'done';
-                        clearInterval(Game2.botInterval);
+                        Game2.state = 'done'; clearInterval(Game2.botInterval);
                         alert("Học sinh đã hết máu! Game sẽ đưa bạn về phòng chờ.");
-                        Game2.initTab(); // go back to tutorial
+                        Game2.initTab(); 
                     }
-                }, 400); // sync with shootStudent animation duration
+                }, 400); 
             }
         };
 
