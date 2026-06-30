@@ -731,7 +731,7 @@
             },
             botAttack: () => {
                 if(Game2.state !== 'playing') return;
-                SFX.playExplosion(); Game2.streak = 0; Game2.lastSolveTime = 0;
+                SFX.playExplosion();
                 const char = document.getElementById('bot-char'); char.classList.add('anim-attack-left'); setTimeout(() => char.classList.remove('anim-attack-left'), 500);
 
                 const proj = document.getElementById('projectile'); proj.className = "magic-projectile shoot-student";
