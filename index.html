@@ -57,14 +57,16 @@
             font-family: 'Nunito', sans-serif;
             font-weight: 800;
         }
-        .btn-sotbf:hover {
+        .btn-sotbf:hover:not(:disabled) {
             transform: translate(-2px, -2px);
             box-shadow: 6px 6px 0px #1e293b;
         }
-        .btn-sotbf:active {
+        .btn-sotbf:active:not(:disabled) {
             transform: translate(4px, 4px) !important;
             box-shadow: 0px 0px 0px #1e293b !important;
         }
+        .btn-sotbf:disabled { opacity: 0.6; cursor: not-allowed; }
+
         .btn-blue { background-color: #4DA5F4; color: white; }
         .btn-yellow { background-color: #FFC107; color: #1e293b; }
         .btn-green { background-color: #22c55e; color: white; }
@@ -171,10 +173,7 @@
         <!-- ========================================== -->
         <section id="view-0" class="view-section w-full cute-box p-6 md:p-8 relative flex flex-col items-center">
             <div class="text-center mb-6">
-                <h2 class="text-3xl md:text-4xl font-black text-sotbf-dark mb-2 uppercase tracking-tight">
-                    Biệt Đội Hứng Bóng
-                </h2>
-                <p class="font-mono text-sotbf-blue font-bold text-sm">Computer Vision Assessment</p>
+                <h2 class="text-3xl md:text-4xl font-black text-sotbf-dark uppercase tracking-tight">Biệt Đội Hứng Bóng</h2>
             </div>
             
             <div class="relative w-full max-w-4xl bg-white rounded-lg overflow-hidden border-4 border-sotbf-dark aspect-[4/3] md:aspect-[16/9] flex justify-center items-center">
@@ -188,7 +187,12 @@
                 </div>
 
                 <div id="g1-start-overlay" class="absolute inset-0 bg-white z-[55] flex flex-col items-center justify-center p-6 text-center hidden">
-                    <h3 class="text-3xl font-black text-sotbf-dark mb-8">Bạn Đã Sẵn Sàng Chưa?</h3>
+                    <h3 class="text-3xl font-black text-sotbf-dark mb-8">Chọn Độ Khó</h3>
+                    <div class="flex gap-4 mb-10 font-mono">
+                        <button onclick="Game1.selectDiff('easy')" id="g1-btn-easy" class="btn-sotbf btn-green px-6 py-3 text-lg">Dễ</button>
+                        <button onclick="Game1.selectDiff('medium')" id="g1-btn-medium" class="btn-sotbf btn-white px-6 py-3 text-lg">Vừa</button>
+                        <button onclick="Game1.selectDiff('hard')" id="g1-btn-hard" class="btn-sotbf btn-white px-6 py-3 text-lg">Khó</button>
+                    </div>
                     <button onclick="Game1.start()" class="btn-sotbf btn-yellow py-4 px-10 text-xl"><i class="fa-solid fa-camera mr-2"></i> Bật Camera AI Để Chơi</button>
                 </div>
 
@@ -202,16 +206,22 @@
                 </div>
 
                 <div id="game1-ui" class="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none hidden font-mono">
-                    <div class="bg-white px-4 py-2 border-2 border-sotbf-dark shadow-[2px_2px_0px_#1e293b]">
-                        <span class="text-sotbf-dark font-bold text-xs">SCORE</span>
+                    <div class="bg-white px-4 py-2 border-2 border-sotbf-dark shadow-[2px_2px_0px_#1e293b] flex flex-col items-start gap-1">
+                        <span class="text-sotbf-dark font-bold text-xs uppercase">BÓNG ĐÃ HỨNG</span>
                         <div class="flex items-baseline">
-                            <span id="g1-score" class="text-sotbf-blue font-black text-2xl">0</span><span class="text-sotbf-dark font-bold text-sm ml-1">/10</span>
+                            <span id="g1-score" class="text-sotbf-blue font-black text-2xl">0</span><span id="g1-target" class="text-sotbf-dark font-bold text-sm ml-1">/25</span>
                         </div>
+                        <div id="g1-hp-container" class="flex gap-1 text-sotbf-red text-lg hidden"></div>
                     </div>
-                    <div class="bg-white px-4 py-2 border-2 border-sotbf-dark shadow-[2px_2px_0px_#1e293b]">
-                        <span class="text-sotbf-dark font-bold text-xs">TIME</span>
-                        <div class="flex items-baseline justify-end">
-                            <span id="g1-timer" class="text-sotbf-red font-black text-2xl">60</span><span class="text-sotbf-dark font-bold text-sm ml-1">s</span>
+                    <div class="flex flex-col items-end gap-2">
+                        <div class="bg-white px-4 py-2 border-2 border-sotbf-dark shadow-[2px_2px_0px_#1e293b]">
+                            <span class="text-sotbf-dark font-bold text-xs">TIME</span>
+                            <div class="flex items-baseline justify-end">
+                                <span id="g1-timer" class="text-sotbf-dark font-black text-2xl">60</span><span class="text-sotbf-dark font-bold text-sm ml-1">s</span>
+                            </div>
+                        </div>
+                        <div id="g1-buff-container" class="bg-white px-3 py-1 border-2 border-sotbf-dark text-xs font-bold shadow-[2px_2px_0px_#1e293b] hidden">
+                            <span id="g1-buff-icon">❄️</span> <span id="g1-buff-time" class="text-sotbf-blue font-black ml-1">4.0s</span>
                         </div>
                     </div>
                 </div>
@@ -227,10 +237,7 @@
         <!-- ========================================== -->
         <section id="view-1" class="view-section hidden-view w-full cute-box p-6 md:p-8 flex flex-col items-center relative">
             <div class="text-center mb-6">
-                <h2 class="text-3xl md:text-4xl font-black text-sotbf-dark mb-2 uppercase tracking-tight">
-                    Đại Chiến Pháp Sư
-                </h2>
-                <p class="font-mono text-sotbf-green font-bold text-sm">Speech to Text Assessment</p>
+                <h2 class="text-3xl md:text-4xl font-black text-sotbf-dark uppercase tracking-tight">Đại Chiến Pháp Sư</h2>
             </div>
 
             <div id="duel-arena" class="w-full relative bg-white border-4 border-sotbf-dark overflow-hidden h-[500px] flex justify-between items-center" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px;">
@@ -278,7 +285,6 @@
 
                     <div id="student-char" class="relative w-28 h-36 mt-2">
                         <div class="w-full h-full animate-bounce">
-                            <!-- Pixelated/Flat Student Icon -->
                             <svg viewBox="0 0 100 120" class="w-full h-full" style="filter: drop-shadow(4px 4px 0px #1e293b);">
                                 <rect x="30" y="40" width="40" height="70" fill="#4DA5F4" stroke="#1e293b" stroke-width="4"/>
                                 <rect x="25" y="10" width="50" height="40" fill="#fbcfe8" stroke="#1e293b" stroke-width="4"/>
@@ -304,7 +310,6 @@
 
                     <div id="bot-char" class="relative w-28 h-36 mt-[150px]">
                         <div class="w-full h-full animate-bounce" style="animation-delay: 0.5s">
-                            <!-- Pixelated/Flat Bot Icon -->
                             <svg viewBox="0 0 100 120" class="w-full h-full" style="filter: drop-shadow(-4px 4px 0px #1e293b);">
                                 <rect x="30" y="40" width="40" height="70" fill="#1e293b" stroke="#1e293b" stroke-width="4"/>
                                 <rect x="25" y="10" width="50" height="40" fill="#94a3b8" stroke="#1e293b" stroke-width="4"/>
@@ -333,10 +338,7 @@
         <!-- ========================================== -->
         <section id="view-2" class="view-section hidden-view w-full cute-box p-6 md:p-8 relative flex flex-col items-center">
             <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-4xl font-black text-sotbf-dark mb-2 uppercase tracking-tight">
-                    Phiên Dịch Vũ Trụ
-                </h2>
-                <p class="font-mono text-sotbf-blue font-bold text-sm">Text to Speech Assessment</p>
+                <h2 class="text-3xl md:text-4xl font-black text-sotbf-dark uppercase tracking-tight">Phiên Dịch Vũ Trụ</h2>
             </div>
             
             <div id="g3-tutorial-overlay" class="absolute inset-0 bg-white z-[60] flex flex-col items-center justify-center p-6 text-center hidden">
@@ -348,11 +350,11 @@
             </div>
 
             <div id="g3-start-overlay" class="absolute inset-0 bg-white z-[55] flex flex-col items-center justify-center p-6 text-center hidden">
-                <h3 class="text-3xl font-black text-sotbf-dark mb-8">Chọn Loại Đĩa Bay</h3>
+                <h3 class="text-3xl font-black text-sotbf-dark mb-8">Chọn Độ Khó</h3>
                 <div class="flex gap-4 mb-10 font-mono">
-                    <button onclick="Game3.selectDiff('easy')" id="g3-btn-easy" class="btn-sotbf btn-green px-6 py-3 text-lg flex flex-col items-center"><span class="text-3xl mb-1">🛸</span> Sóng Sin (Dễ)</button>
-                    <button onclick="Game3.selectDiff('medium')" id="g3-btn-medium" class="btn-sotbf btn-white px-6 py-3 text-lg flex flex-col items-center"><span class="text-3xl mb-1">👾</span> Sóng Vuông (Vừa)</button>
-                    <button onclick="Game3.selectDiff('hard')" id="g3-btn-hard" class="btn-sotbf btn-white px-6 py-3 text-lg flex flex-col items-center"><span class="text-3xl mb-1">🚀</span> Sóng Răng Cưa (Khó)</button>
+                    <button onclick="Game3.selectDiff('easy')" id="g3-btn-easy" class="btn-sotbf btn-green px-6 py-3 text-lg flex flex-col items-center"><span class="text-3xl mb-1">🛸</span> Dễ</button>
+                    <button onclick="Game3.selectDiff('medium')" id="g3-btn-medium" class="btn-sotbf btn-white px-6 py-3 text-lg flex flex-col items-center"><span class="text-3xl mb-1">👾</span> Vừa</button>
+                    <button onclick="Game3.selectDiff('hard')" id="g3-btn-hard" class="btn-sotbf btn-white px-6 py-3 text-lg flex flex-col items-center"><span class="text-3xl mb-1">🚀</span> Khó</button>
                 </div>
                 <button onclick="Game3.startCountdown()" class="btn-sotbf btn-yellow py-3 px-12 text-2xl font-black">BẮT ĐẦU</button>
             </div>
@@ -399,7 +401,7 @@
                         </div>
                         <div class="absolute w-full h-[2px] bg-sotbf-dark/20 top-1/2"></div>
                         <svg viewBox="0 0 800 200" class="w-full h-full" preserveAspectRatio="none">
-                            <path id="path-ufo" d="" fill="none" stroke="#1e293b" stroke-width="4" stroke-dasharray="8 8"/>
+                            <path id="path-ufo" d="" fill="none" stroke="#1e293b" stroke-width="4" stroke-dasharray="8 8" class="transition-opacity duration-300"/>
                             <path id="path-player" d="" fill="none" stroke="#4DA5F4" stroke-width="5"/>
                         </svg>
                     </div>
@@ -434,14 +436,17 @@
                 <p class="text-sotbf-dark mt-2 font-body font-bold text-lg border-b-2 pb-6 border-slate-200">Đố bạn trò chơi tương tác vừa rồi đã sử dụng loại công nghệ AI nào?</p>
             </div>
             <div class="space-y-4 font-mono" id="quiz-options">
-                <button onclick="InitAI.checkAnswer(0, this)" class="quiz-option btn-sotbf btn-white w-full text-left px-6 py-4 text-lg">A. Computer Vision</button>
-                <button onclick="InitAI.checkAnswer(1, this)" class="quiz-option btn-sotbf btn-white w-full text-left px-6 py-4 text-lg">B. Speech to Text</button>
-                <button onclick="InitAI.checkAnswer(2, this)" class="quiz-option btn-sotbf btn-white w-full text-left px-6 py-4 text-lg">C. Text to Speech</button>
+                <button onclick="InitAI.checkAnswer(0, this)" class="quiz-option btn-sotbf btn-white w-full text-left px-6 py-4 text-lg">A. Thị giác máy tính (Computer Vision)</button>
+                <button onclick="InitAI.checkAnswer(1, this)" class="quiz-option btn-sotbf btn-white w-full text-left px-6 py-4 text-lg">B. Chuyển Giọng nói thành Văn bản (Speech to Text)</button>
+                <button onclick="InitAI.checkAnswer(2, this)" class="quiz-option btn-sotbf btn-white w-full text-left px-6 py-4 text-lg">C. Chuyển Văn bản thành Giọng nói (Text to Speech)</button>
             </div>
             <div id="quiz-feedback" class="mt-8 text-center font-black text-2xl hidden"></div>
-            <div id="quiz-next" class="mt-8 flex justify-center hidden">
+            <div id="quiz-next" class="mt-8 flex justify-center hidden gap-4">
+                <button onclick="InitAI.playAgain()" class="btn-sotbf btn-white py-3 px-8 text-xl">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Chơi lại màn này
+                </button>
                 <button onclick="InitAI.closeQuiz()" class="btn-sotbf btn-blue py-3 px-8 text-xl">
-                    Chuyển sang phần tiếp theo <i class="fa-solid fa-arrow-right ml-2"></i>
+                    Chuyển sang màn tiếp <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
             </div>
         </div>
@@ -569,6 +574,11 @@
                     setTimeout(() => btn.classList.remove('animate-shake'), 500);
                 }
             },
+            playAgain: () => {
+                document.getElementById('quiz-modal').classList.add('hidden');
+                document.getElementById('confetti-container').innerHTML = '';
+                InitAI.switchTab(appState.activeTab);
+            },
             closeQuiz: () => {
                 document.getElementById('quiz-modal').classList.add('hidden');
                 document.getElementById('confetti-container').innerHTML = '';
@@ -586,7 +596,9 @@
         const Game1 = {
             model: null, stream: null, ctx: null, reqId: null, trackId: null, isRunning: false,
             basket: { x: 320, y: 240, width: 120, height: 25, color: '#1e293b' },
+            targetBasket: { x: 320, y: 240 },
             items: [], particles: [], score: 0, target: 25, time: 60, timerInterval: null,
+            difficulty: 'easy', ballCount: 0, hp: 3, maxHp: 3, freezeUntil: 0, slowUntil: 0,
             canvas: document.getElementById('game-canvas'), video: document.getElementById('webcam-video'),
 
             initTab: () => {
@@ -596,10 +608,33 @@
                 document.getElementById('g1-countdown-overlay').classList.add('hidden');
                 document.getElementById('game1-ui').classList.add('hidden');
                 Game1.stop();
+                Game1.selectDiff('easy');
             },
             closeTutorial: () => {
                 document.getElementById('g1-tutorial-overlay').classList.add('hidden');
                 document.getElementById('g1-start-overlay').classList.remove('hidden');
+            },
+            selectDiff: (level) => {
+                ['easy', 'medium', 'hard'].forEach(l => {
+                    const btn = document.getElementById(`g1-btn-${l}`);
+                    btn.classList.remove('btn-green'); btn.classList.add('btn-white');
+                });
+                document.getElementById(`g1-btn-${level}`).classList.add('btn-green');
+                document.getElementById(`g1-btn-${level}`).classList.remove('btn-white');
+                
+                Game1.difficulty = level;
+                if(level === 'easy') { Game1.target = 25; Game1.maxHp = 999; }
+                else if (level === 'medium') { Game1.target = 50; Game1.maxHp = 3; }
+                else { Game1.target = 50; Game1.maxHp = 1; }
+            },
+            renderHP: () => {
+                const hpCont = document.getElementById('g1-hp-container');
+                if (Game1.difficulty === 'easy') { hpCont.classList.add('hidden'); return; }
+                hpCont.classList.remove('hidden');
+                hpCont.innerHTML = '';
+                for(let i=0; i<Game1.maxHp; i++) {
+                    hpCont.innerHTML += `<i class="fa-solid fa-heart ${i < Game1.hp ? '' : 'opacity-20'}"></i>`;
+                }
             },
             start: async () => {
                 SFX.init();
@@ -626,16 +661,13 @@
                 document.getElementById('g1-countdown-overlay').classList.remove('hidden');
                 let count = 3;
                 const txt = document.getElementById('g1-countdown-text');
-                txt.innerText = count;
-                SFX.playTing();
+                txt.innerText = count; SFX.playTing();
                 
                 const inter = setInterval(() => {
                     count--;
-                    if(count > 0) {
-                        txt.innerText = count; SFX.playTing();
-                    } else if(count === 0) {
-                        txt.innerText = "BẮT ĐẦU!"; SFX.playExplosion();
-                    } else {
+                    if(count > 0) { txt.innerText = count; SFX.playTing(); } 
+                    else if(count === 0) { txt.innerText = "BẮT ĐẦU!"; SFX.playExplosion(); } 
+                    else {
                         clearInterval(inter);
                         document.getElementById('g1-countdown-overlay').classList.add('hidden');
                         document.getElementById('game1-ui').classList.remove('hidden');
@@ -645,13 +677,18 @@
             },
             resume: () => {
                 if (Game1.isRunning) return;
-                Game1.isRunning = true; Game1.score = 0; Game1.time = 60; Game1.items = []; Game1.particles = [];
-                document.getElementById('g1-score').innerText = Game1.score; document.getElementById('g1-timer').innerText = Game1.time;
+                Game1.isRunning = true; Game1.score = 0; Game1.time = 90; Game1.items = []; Game1.particles = [];
+                Game1.ballCount = 0; Game1.hp = Game1.maxHp; Game1.freezeUntil = 0; Game1.slowUntil = 0;
+                
+                document.getElementById('g1-score').innerText = Game1.score;
+                document.getElementById('g1-target').innerText = `/${Game1.target}`;
+                document.getElementById('g1-timer').innerText = Game1.time;
+                Game1.renderHP();
                 
                 clearInterval(Game1.timerInterval);
                 Game1.timerInterval = setInterval(() => {
                     Game1.time--; document.getElementById('g1-timer').innerText = Game1.time;
-                    if(Game1.time <= 0) { Game1.stop(); InitAI.showQuiz(); }
+                    if(Game1.time <= 0) { Game1.gameOver(false); }
                 }, 1000);
                 Game1.TrackLoop();
                 Game1.RenderLoop();
@@ -662,11 +699,15 @@
                 if(Game1.trackId) clearTimeout(Game1.trackId);
                 if(Game1.stream) { Game1.stream.getTracks().forEach(t => t.stop()); Game1.stream = null; }
             },
-            createParticles: (x, y, color) => {
+            gameOver: (win) => {
+                Game1.stop();
+                setTimeout(() => InitAI.showQuiz(), 1000);
+            },
+            createParticles: (x, y, color, type) => {
                 for(let i=0; i<10; i++) {
                     Game1.particles.push({
                         x: x, y: y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-                        life: 1.0, color: color, size: Math.random() * 6 + 4
+                        life: 1.0, color: color, size: Math.random() * 6 + 4, type: type
                     });
                 }
             },
@@ -676,56 +717,110 @@
                     const preds = await Game1.model.estimateFaces(Game1.video, false);
                     if (preds.length > 0) {
                         const nose = preds[0].landmarks[2]; 
-                        const targetX = Game1.canvas.width - nose[0];
-                        const targetY = nose[1];
-                        Game1.basket.x += (targetX - Game1.basket.x) * 0.25; 
-                        Game1.basket.y += (targetY - Game1.basket.y) * 0.25; 
+                        Game1.targetBasket.x = Game1.canvas.width - nose[0];
+                        Game1.targetBasket.y = nose[1];
                     }
                 } catch(e) {}
                 Game1.trackId = setTimeout(Game1.TrackLoop, 50); 
             },
             RenderLoop: () => {
                 if (!Game1.isRunning) return;
+                
+                // Interpolate 60fps Basket
+                Game1.basket.x += (Game1.targetBasket.x - Game1.basket.x) * 0.2;
+                Game1.basket.y += (Game1.targetBasket.y - Game1.basket.y) * 0.2;
+
                 Game1.ctx.clearRect(0, 0, Game1.canvas.width, Game1.canvas.height);
                 Game1.ctx.drawImage(Game1.video, 0, 0, Game1.canvas.width, Game1.canvas.height);
                 
-                if(Math.random() < 0.015 + (Game1.score * 0.001)) {
-                    const colors = ['#4DA5F4', '#FFC107', '#22c55e', '#ef4444'];
+                const now = Date.now();
+                const isFrozen = now < Game1.freezeUntil;
+                const isSlow = now < Game1.slowUntil;
+                
+                // UI Buff
+                const buffCont = document.getElementById('g1-buff-container');
+                if (isFrozen) {
+                    buffCont.classList.remove('hidden');
+                    document.getElementById('g1-buff-icon').innerText = '❄️';
+                    document.getElementById('g1-buff-time').innerText = ((Game1.freezeUntil - now)/1000).toFixed(1) + 's';
+                } else if (isSlow) {
+                    buffCont.classList.remove('hidden');
+                    document.getElementById('g1-buff-icon').innerText = '⏳';
+                    document.getElementById('g1-buff-time').innerText = ((Game1.slowUntil - now)/1000).toFixed(1) + 's';
+                } else {
+                    buffCont.classList.add('hidden');
+                }
+
+                // Spawn Items
+                if(!isFrozen && Math.random() < 0.015 + (Game1.score * 0.001)) {
                     let margin = Game1.canvas.width * 0.2;
                     let spawnWidth = Game1.canvas.width * 0.6;
+                    let type = 'ball';
+                    let color = ['#4DA5F4', '#FFC107', '#22c55e', '#ef4444'][Math.floor(Math.random()*4)];
+                    
+                    Game1.ballCount++;
+                    if (Game1.difficulty !== 'easy') {
+                        if (Game1.ballCount % 10 === 0) type = 'snow';
+                        else if (Game1.ballCount % 4 === 0) type = 'bomb';
+                        else if (Game1.difficulty === 'hard' && Game1.ballCount % 15 === 0) type = 'sand';
+                    }
+
                     Game1.items.push({
-                        x: Math.random() * spawnWidth + margin, y: -30, radius: Math.random() * 10 + 15, // bigger flat balls
-                        speed: (Math.random() * 3 + 3) * 0.8, color: colors[Math.floor(Math.random()*colors.length)]
+                        x: Math.random() * spawnWidth + margin, y: -30, radius: 15,
+                        speed: (Math.random() * 3 + 3) * 0.8, color: color, type: type
                     });
                 }
 
                 let bX = (Game1.canvas.width - Game1.basket.x);
-                let basketDrawX = bX - Game1.basket.width/2; let basketDrawY = Game1.basket.y - Game1.basket.height/2;
+                let basketDrawX = bX - Game1.basket.width/2; 
+                let basketDrawY = Game1.basket.y - Game1.basket.height/2;
                 
-                Game1.ctx.fillStyle = '#FFC107'; // yellow basket
+                // Draw Basket
+                Game1.ctx.fillStyle = '#FFC107';
                 Game1.ctx.fillRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
                 Game1.ctx.lineWidth = 3; Game1.ctx.strokeStyle = '#1e293b';
                 Game1.ctx.strokeRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
-                
-                Game1.ctx.fillStyle = '#1e293b'; Game1.ctx.font = 'bold 12px "Roboto Mono"'; Game1.ctx.textAlign='center';
-                Game1.ctx.fillText("BASKET", bX, basketDrawY + 17);
+                // Removed the "BASKET" text inside the basket
 
                 for(let i=Game1.items.length-1; i>=0; i--) {
-                    let it = Game1.items[i]; it.y += it.speed;
+                    let it = Game1.items[i]; 
+                    if (!isFrozen) {
+                        it.y += isSlow ? (it.speed * 0.2) : it.speed;
+                    }
                     let vX = (Game1.canvas.width - it.x);
                     
-                    // Draw flat balls with border
-                    Game1.ctx.fillStyle = it.color;
-                    Game1.ctx.beginPath(); Game1.ctx.arc(vX, it.y, it.radius, 0, 2*Math.PI); Game1.ctx.fill();
-                    Game1.ctx.stroke(); // stroke from basket is still active
+                    if (it.type === 'ball') {
+                        Game1.ctx.fillStyle = it.color;
+                        Game1.ctx.beginPath(); Game1.ctx.arc(vX, it.y, it.radius, 0, 2*Math.PI); Game1.ctx.fill();
+                        Game1.ctx.stroke();
+                    } else {
+                        Game1.ctx.font = '30px Arial'; Game1.ctx.textAlign='center'; Game1.ctx.textBaseline='middle';
+                        let icon = '❄️';
+                        if (it.type === 'bomb') icon = '💣';
+                        if (it.type === 'sand') icon = '⏳';
+                        Game1.ctx.fillText(icon, vX, it.y);
+                    }
 
+                    // Collision
                     if(it.y+it.radius >= basketDrawY && it.y <= basketDrawY+Game1.basket.height) {
                         if(Math.abs(it.x - Game1.basket.x) < Game1.basket.width/2 + it.radius) {
-                            Game1.score++; document.getElementById('g1-score').innerText = Game1.score;
-                            SFX.playTing(); Game1.createParticles(vX, it.y, it.color);
-                            Game1.items.splice(i,1);
                             
-                            if(Game1.score >= Game1.target) { Game1.stop(); setTimeout(() => InitAI.showQuiz(), 1000); return; }
+                            if (it.type === 'ball') {
+                                Game1.score++; document.getElementById('g1-score').innerText = Game1.score;
+                                SFX.playTing(); Game1.createParticles(vX, it.y, it.color, 'ball');
+                                if(Game1.score >= Game1.target) { Game1.gameOver(true); return; }
+                            } else if (it.type === 'snow') {
+                                SFX.playExplosion(); Game1.freezeUntil = now + 4000;
+                            } else if (it.type === 'bomb') {
+                                SFX.playExplosion(); Game1.hp--; Game1.renderHP();
+                                document.getElementById('duel-arena') && document.getElementById('game-canvas').classList.add('animate-shake');
+                                setTimeout(() => document.getElementById('game-canvas').classList.remove('animate-shake'), 500);
+                                if(Game1.hp <= 0) { Game1.gameOver(false); return; }
+                            } else if (it.type === 'sand') {
+                                SFX.playTing(); Game1.slowUntil = now + 3000;
+                            }
+                            
+                            Game1.items.splice(i,1);
                             continue;
                         }
                     }
@@ -737,7 +832,7 @@
                     p.x += p.vx; p.y += p.vy; p.life -= 0.05;
                     if(p.life <= 0) { Game1.particles.splice(i,1); continue; }
                     Game1.ctx.fillStyle = p.color;
-                    Game1.ctx.fillRect(p.x, p.y, p.size, p.size); // square particles for brutalist
+                    Game1.ctx.fillRect(p.x, p.y, p.size, p.size);
                     Game1.ctx.strokeRect(p.x, p.y, p.size, p.size);
                 }
                 Game1.reqId = requestAnimationFrame(Game1.RenderLoop);
@@ -780,13 +875,10 @@
             selectDiff: (level) => {
                 ['easy', 'medium', 'hard'].forEach(l => {
                     const btn = document.getElementById(`btn-diff-${l}`);
-                    btn.classList.remove('btn-green');
-                    btn.classList.add('btn-white');
+                    btn.classList.remove('btn-green'); btn.classList.add('btn-white');
                 });
-                
                 const btn = document.getElementById(`btn-diff-${level}`);
-                btn.classList.add('btn-green');
-                btn.classList.remove('btn-white');
+                btn.classList.add('btn-green'); btn.classList.remove('btn-white');
                 
                 Game2.difficulty = level;
                 if(level === 'easy') Game2.numItems = 1;
@@ -797,19 +889,14 @@
                 document.getElementById('g2-start-overlay').classList.add('hidden');
                 document.getElementById('g2-countdown-overlay').classList.remove('hidden');
                 Game2.state = 'countdown';
-                
                 let count = 3;
                 const txt = document.getElementById('g2-countdown-text');
-                txt.innerText = count;
-                SFX.playTing();
-                
+                txt.innerText = count; SFX.playTing();
                 const inter = setInterval(() => {
                     count--;
-                    if(count > 0) {
-                        txt.innerText = count; SFX.playTing();
-                    } else if(count === 0) {
-                        txt.innerText = "CHIẾN!"; SFX.playExplosion();
-                    } else {
+                    if(count > 0) { txt.innerText = count; SFX.playTing(); } 
+                    else if(count === 0) { txt.innerText = "CHIẾN!"; SFX.playExplosion(); } 
+                    else {
                         clearInterval(inter);
                         document.getElementById('g2-countdown-overlay').classList.add('hidden');
                         Game2.startGame();
@@ -826,36 +913,26 @@
                 document.getElementById('emoji-container').innerHTML = '';
                 
                 let btn = document.getElementById('btn-mic');
-                btn.classList.remove('btn-red');
-                btn.classList.add('btn-blue');
+                btn.classList.remove('btn-red'); btn.classList.add('btn-blue');
                 btn.innerHTML = '<i class="fa-solid fa-microphone mr-3 text-2xl"></i> Bật Micro Đọc Thần Chú';
             },
             resetTotal: () => {
-                Game2.state = 'init';
-                clearInterval(Game2.botInterval);
-                if(Game2.isMicOn) Game2.toggleMic(); // turn off
+                Game2.state = 'init'; clearInterval(Game2.botInterval);
+                if(Game2.isMicOn) Game2.toggleMic(); 
             },
             startGame: () => {
-                Game2.state = 'playing';
-                Game2.newTurn();
-                
+                Game2.state = 'playing'; Game2.newTurn();
                 Game2.botInterval = setInterval(() => {
-                    if(Game2.state === 'playing' && Game2.studentHP > 0 && Game2.botHP > 0) {
-                        Game2.botAttack();
-                    }
+                    if(Game2.state === 'playing' && Game2.studentHP > 0 && Game2.botHP > 0) Game2.botAttack();
                 }, 6000);
             },
             updateHP: (who, val) => {
                 document.getElementById(`${who}-hp-red`).style.width = val + '%';
-                setTimeout(() => {
-                    document.getElementById(`${who}-hp-yellow`).style.width = val + '%';
-                }, 100);
+                setTimeout(() => { document.getElementById(`${who}-hp-yellow`).style.width = val + '%'; }, 100);
             },
             newTurn: () => {
                 if(Game2.studentHP <= 0 || Game2.botHP <= 0 || Game2.state !== 'playing') return;
-                Game2.isAttacking = false;
-                
-                Game2.currentTargets = [];
+                Game2.isAttacking = false; Game2.currentTargets = [];
                 let tempWords = [...Game2.words];
                 for(let i=0; i<Game2.numItems; i++) {
                     let idx = Math.floor(Math.random() * tempWords.length);
@@ -867,31 +944,26 @@
                     }
                     Game2.currentTargets.push({ word: w.word, emoji: w.emoji, solved: false, animClass: anim });
                 }
-                
                 Game2.renderBubble();
                 document.getElementById('student-bubble').classList.remove('opacity-0');
                 document.getElementById('student-bubble').classList.add('opacity-100');
                 document.getElementById('stt-feedback').innerText = "";
             },
             renderBubble: () => {
-                const container = document.getElementById('emoji-container');
-                container.innerHTML = '';
-                
+                const container = document.getElementById('emoji-container'); container.innerHTML = '';
                 if(Game2.difficulty === 'hard') {
                     const positions = [ {l:'10%', t:'10%'}, {l:'45%', t:'20%'}, {l:'80%', t:'5%'} ];
                     Game2.currentTargets.forEach((t, i) => {
                         let span = document.createElement('span');
                         span.className = `emoji-item ${t.animClass} ${t.solved ? 'emoji-solved':''}`;
                         span.style.left = positions[i].l; span.style.top = positions[i].t;
-                        span.innerText = t.emoji;
-                        container.appendChild(span);
+                        span.innerText = t.emoji; container.appendChild(span);
                     });
                 } else {
                     Game2.currentTargets.forEach(t => {
                         let span = document.createElement('span');
                         span.className = `emoji-item relative ${t.solved ? 'emoji-solved':''}`;
-                        span.innerText = t.emoji;
-                        container.appendChild(span);
+                        span.innerText = t.emoji; container.appendChild(span);
                     });
                 }
             },
@@ -900,7 +972,6 @@
                 if(!SR) return false;
                 Game2.recog = new SR(); Game2.recog.lang = 'vi-VN';
                 Game2.recog.continuous = true; Game2.recog.interimResults = true;
-                
                 Game2.recog.onresult = (e) => {
                     if(Game2.isAttacking) return; 
                     let text = '';
@@ -908,39 +979,28 @@
                     document.getElementById('stt-feedback').innerText = `Đang nghe: "${text}"`;
                     Game2.checkSpell(text);
                 };
-                Game2.recog.onend = () => {
-                    if(Game2.isMicOn && Game2.state === 'playing') {
-                        try { Game2.recog.start(); } catch(e){}
-                    }
-                };
+                Game2.recog.onend = () => { if(Game2.isMicOn && Game2.state === 'playing') { try { Game2.recog.start(); } catch(e){} } };
                 return true;
             },
             toggleMic: () => {
                 if(Game2.state !== 'playing') return;
                 SFX.init(); InitAI.loadVoices();
                 if(!Game2.recog && !Game2.initSTT()) { alert("Trình duyệt không hỗ trợ Web Speech API."); return; }
-                
                 const btn = document.getElementById('btn-mic');
                 if(Game2.isMicOn) {
-                    Game2.isMicOn = false;
-                    try { Game2.recog.stop(); } catch(e){}
-                    btn.classList.remove('btn-red');
-                    btn.classList.add('btn-blue');
+                    Game2.isMicOn = false; try { Game2.recog.stop(); } catch(e){}
+                    btn.classList.remove('btn-red'); btn.classList.add('btn-blue');
                     btn.innerHTML = '<i class="fa-solid fa-microphone mr-3 text-2xl"></i> Bật Micro Đọc Thần Chú';
                     document.getElementById('stt-feedback').innerText = "";
                 } else {
-                    Game2.isMicOn = true;
-                    try { Game2.recog.start(); } catch(e){}
-                    btn.classList.remove('btn-blue');
-                    btn.classList.add('btn-red');
+                    Game2.isMicOn = true; try { Game2.recog.start(); } catch(e){}
+                    btn.classList.remove('btn-blue'); btn.classList.add('btn-red');
                     btn.innerHTML = '<i class="fa-solid fa-microphone-slash mr-3 text-2xl"></i> Tắt Micro';
                 }
             },
             checkSpell: (text) => {
                 if(Game2.state !== 'playing' || Game2.isAttacking) return;
-                const clean = text.toLowerCase().trim();
-                let newlySolved = false;
-
+                const clean = text.toLowerCase().trim(); let newlySolved = false;
                 Game2.currentTargets.forEach(target => {
                     if(!target.solved) {
                         const coreWord = target.word.split(" ")[1] || target.word; 
@@ -949,30 +1009,24 @@
                         }
                     }
                 });
-
                 if(newlySolved) {
                     Game2.renderBubble();
-                    const allSolved = Game2.currentTargets.every(t => t.solved);
-                    if(allSolved) {
+                    if(Game2.currentTargets.every(t => t.solved)) {
                         document.getElementById('stt-feedback').innerText = "Thần chú chính xác!";
                         Game2.studentAttack();
                     }
                 }
             },
             studentAttack: () => {
-                Game2.isAttacking = true; 
-                let now = Date.now();
-                
-                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 3000)) {
-                    Game2.streak++;
-                } else { Game2.streak = 1; }
+                Game2.isAttacking = true; let now = Date.now();
+                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 3000)) Game2.streak++;
+                else Game2.streak = 1;
                 Game2.lastSolveTime = Date.now(); 
                 
                 if (Game2.streak > 1) {
                     let cd = document.getElementById('combo-display');
                     cd.innerText = `Combo x${Game2.streak}! 🔥`;
-                    cd.classList.remove('opacity-0', 'scale-100');
-                    cd.classList.add('opacity-100', 'scale-125');
+                    cd.classList.remove('opacity-0', 'scale-100'); cd.classList.add('opacity-100', 'scale-125');
                     SFX.playTing();
                     setTimeout(() => {
                         cd.classList.remove('scale-125'); cd.classList.add('scale-100');
@@ -982,14 +1036,12 @@
 
                 document.getElementById('student-bubble').classList.remove('opacity-100');
                 document.getElementById('student-bubble').classList.add('opacity-0');
-                
                 const char = document.getElementById('student-char');
                 char.classList.add('anim-attack-right');
                 setTimeout(() => char.classList.remove('anim-attack-right'), 500);
 
                 const proj = document.getElementById('projectile');
                 proj.className = "magic-projectile shoot-bot";
-                
                 setTimeout(() => {
                     SFX.playExplosion();
                     document.getElementById('duel-arena').classList.add('animate-shake');
@@ -1004,31 +1056,24 @@
                         Game2.state = 'done'; clearInterval(Game2.botInterval);
                         if(Game2.isMicOn) Game2.toggleMic();
                         setTimeout(() => InitAI.showQuiz(), 1500);
-                    } else {
-                        Game2.newTurn();
-                    }
+                    } else { Game2.newTurn(); }
                 }, 400); 
             },
             botAttack: () => {
                 if(Game2.state !== 'playing') return;
-                SFX.playExplosion();
-                
-                Game2.streak = 0; Game2.lastSolveTime = 0;
+                SFX.playExplosion(); Game2.streak = 0; Game2.lastSolveTime = 0;
                 const char = document.getElementById('bot-char');
                 char.classList.add('anim-attack-left');
                 setTimeout(() => char.classList.remove('anim-attack-left'), 500);
 
                 const proj = document.getElementById('projectile');
                 proj.className = "magic-projectile shoot-student";
-                
                 setTimeout(() => {
                     document.getElementById('duel-arena').classList.add('animate-shake');
                     setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
-                    
                     Game2.studentHP = Math.max(0, Game2.studentHP - 15);
                     Game2.updateHP('student', Game2.studentHP);
                     proj.className = "magic-projectile";
-                    
                     if(Game2.studentHP <= 0) {
                         Game2.state = 'done'; clearInterval(Game2.botInterval);
                         if(Game2.isMicOn) Game2.toggleMic();
@@ -1044,8 +1089,8 @@
         // ==========================================
         const Game3 = {
             battery: 0, state: 'init', reqId: null, phase: 0,
-            targetRate: 1.0, targetPitch: 1.0,
-            difficulty: 'easy', tolerance: 0.2, waveType: 'sine', // sine, square, triangle
+            targetRate: 1.0, targetPitch: 1.0, isGeneratingTarget: false,
+            difficulty: 'easy', tolerance: 0.2, targetChangeTimer: null, visibilityTimer: null, isWaveVisible: true,
 
             initTab: () => {
                 document.getElementById('g3-tutorial-overlay').classList.remove('hidden');
@@ -1055,6 +1100,7 @@
                 Game3.battery = 0; document.getElementById('battery-fill').style.width = '0%';
                 document.getElementById('battery-text').innerText = '0%';
                 document.getElementById('ufo-container').classList.remove('fly-away');
+                document.getElementById('path-ufo').style.opacity = 1;
                 Game3.state = 'tutorial';
                 
                 document.getElementById('tts-rate').addEventListener('input', Game3.onSliderChange);
@@ -1067,25 +1113,21 @@
             selectDiff: (level) => {
                 ['easy', 'medium', 'hard'].forEach(l => {
                     const btn = document.getElementById(`g3-btn-${l}`);
-                    btn.classList.remove('btn-green');
-                    btn.classList.add('btn-white');
+                    btn.classList.remove('btn-green'); btn.classList.add('btn-white');
                 });
-                
-                const btn = document.getElementById(`g3-btn-${level}`);
-                btn.classList.add('btn-green');
-                btn.classList.remove('btn-white');
+                document.getElementById(`g3-btn-${level}`).classList.add('btn-green');
+                document.getElementById(`g3-btn-${level}`).classList.remove('btn-white');
                 
                 Game3.difficulty = level;
-                if(level === 'easy') { Game3.waveType = 'sine'; Game3.tolerance = 0.2; document.getElementById('ufo-container').innerText = '🛸'; }
-                else if(level === 'medium') { Game3.waveType = 'square'; Game3.tolerance = 0.15; document.getElementById('ufo-container').innerText = '👾'; }
-                else { Game3.waveType = 'triangle'; Game3.tolerance = 0.08; document.getElementById('ufo-container').innerText = '🚀'; }
+                if(level === 'easy') { Game3.tolerance = 0.2; document.getElementById('ufo-container').innerText = '🛸'; }
+                else if(level === 'medium') { Game3.tolerance = 0.15; document.getElementById('ufo-container').innerText = '👾'; }
+                else { Game3.tolerance = 0.1; document.getElementById('ufo-container').innerText = '🚀'; }
             },
             startCountdown: () => {
                 document.getElementById('g3-start-overlay').classList.add('hidden');
                 document.getElementById('g3-countdown-overlay').classList.remove('hidden');
                 Game3.state = 'countdown';
-                let count = 3;
-                const txt = document.getElementById('g3-countdown-text');
+                let count = 3; const txt = document.getElementById('g3-countdown-text');
                 txt.innerText = count; SFX.playTing();
                 const inter = setInterval(() => {
                     count--;
@@ -1106,51 +1148,91 @@
             stop: () => {
                 Game3.state = 'init';
                 if(Game3.reqId) cancelAnimationFrame(Game3.reqId);
+                clearTimeout(Game3.targetChangeTimer);
+                clearInterval(Game3.visibilityTimer);
             },
             generateTarget: () => {
-                Game3.targetRate = (Math.random() * 1.3 + 0.6).toFixed(1);
-                Game3.targetPitch = (Math.random() * 1.3 + 0.6).toFixed(1);
+                Game3.isGeneratingTarget = true;
+                clearTimeout(Game3.targetChangeTimer);
+                clearInterval(Game3.visibilityTimer);
+                document.getElementById('path-ufo').style.opacity = 1;
+                Game3.isWaveVisible = true;
                 
                 document.getElementById('tts-rate').value = 1.0;
                 document.getElementById('tts-pitch').value = 1.0;
                 document.getElementById('val-rate').innerText = '1.0';
                 document.getElementById('val-pitch').innerText = '1.0';
                 document.getElementById('g3-feedback').innerText = "";
+
+                setTimeout(() => {
+                    Game3.targetRate = (Math.random() * 1.3 + 0.6).toFixed(1);
+                    Game3.targetPitch = (Math.random() * 1.3 + 0.6).toFixed(1);
+                    Game3.isGeneratingTarget = false;
+
+                    if (Game3.state === 'playing') {
+                        if (Game3.difficulty === 'medium') {
+                            Game3.targetChangeTimer = setTimeout(() => {
+                                document.getElementById('g3-feedback').innerText = "Cảnh báo: Tần số mục tiêu đã thay đổi!";
+                                document.getElementById('g3-feedback').className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red";
+                                Game3.generateTarget();
+                            }, 6500);
+                        } else if (Game3.difficulty === 'hard') {
+                            Game3.targetChangeTimer = setTimeout(() => {
+                                document.getElementById('g3-feedback').innerText = "Cảnh báo: Tần số mục tiêu đã thay đổi!";
+                                document.getElementById('g3-feedback').className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red";
+                                Game3.generateTarget();
+                            }, 7000);
+                            
+                            Game3.visibilityTimer = setInterval(() => {
+                                if(Game3.state === 'playing' && !Game3.isGeneratingTarget) {
+                                    Game3.isWaveVisible = false;
+                                    document.getElementById('path-ufo').style.opacity = 0;
+                                    setTimeout(() => {
+                                        if (Game3.state === 'playing') {
+                                            Game3.isWaveVisible = true;
+                                            document.getElementById('path-ufo').style.opacity = 1;
+                                        }
+                                    }, 1000); // Tàng hình 1s
+                                }
+                            }, 3000); // Mỗi 3s
+                        }
+                    }
+                }, 1000); // Chờ 1 giây giả lập tạo mục tiêu mới
             },
             onSliderChange: (e) => {
                 const val = parseFloat(e.target.value).toFixed(1);
                 if(e.target.id === 'tts-rate') document.getElementById('val-rate').innerText = val;
                 else document.getElementById('val-pitch').innerText = val;
             },
-            getWaveY: (x, freq, amp, phase, type) => {
-                const sineVal = Math.sin(x * freq + phase);
-                if (type === 'sine') return sineVal * amp;
-                if (type === 'square') return Math.sign(sineVal) * amp;
-                if (type === 'triangle') return Math.asin(sineVal) * (2 / Math.PI) * amp;
-                return 0;
+            getWaveY: (x, freq, amp, phase) => {
+                return Math.sin(x * freq + phase) * amp; // Luôn dùng sóng Sin cho mọi cấp độ
             },
             renderWaves: () => {
                 if(Game3.state !== 'playing') return;
                 Game3.phase += 0.08;
-                
                 const width = 800; const height = 200; const midY = height/2;
                 
-                let uFreq = Game3.targetRate * 0.02; 
-                let uAmp = Game3.targetPitch * 40; 
-                let dUfo = `M 0 ${midY}`;
-                for(let x=0; x<=width; x+=5) {
-                    let y = midY + Game3.getWaveY(x, uFreq, uAmp, Game3.phase, Game3.waveType);
-                    dUfo += ` L ${x} ${y}`;
+                // Draw Target (ufo)
+                if (Game3.isGeneratingTarget) {
+                    document.getElementById('path-ufo').setAttribute('d', `M 0 ${midY} L ${width} ${midY}`);
+                } else {
+                    let uFreq = Game3.targetRate * 0.02; 
+                    let uAmp = Game3.targetPitch * 40; 
+                    let dUfo = `M 0 ${midY}`;
+                    for(let x=0; x<=width; x+=5) {
+                        let y = midY + Game3.getWaveY(x, uFreq, uAmp, Game3.phase);
+                        dUfo += ` L ${x} ${y}`;
+                    }
+                    document.getElementById('path-ufo').setAttribute('d', dUfo);
                 }
-                document.getElementById('path-ufo').setAttribute('d', dUfo);
                 
+                // Draw Player
                 let pRate = parseFloat(document.getElementById('tts-rate').value);
                 let pPitch = parseFloat(document.getElementById('tts-pitch').value);
-                let pFreq = pRate * 0.02;
-                let pAmp = pPitch * 40;
+                let pFreq = pRate * 0.02; let pAmp = pPitch * 40;
                 let dPlayer = `M 0 ${midY}`;
                 for(let x=0; x<=width; x+=5) {
-                    let y = midY + Game3.getWaveY(x, pFreq, pAmp, Game3.phase, Game3.waveType);
+                    let y = midY + Game3.getWaveY(x, pFreq, pAmp, Game3.phase);
                     dPlayer += ` L ${x} ${y}`;
                 }
                 document.getElementById('path-player').setAttribute('d', dPlayer);
@@ -1158,7 +1240,7 @@
                 Game3.reqId = requestAnimationFrame(Game3.renderWaves);
             },
             play: () => {
-                if(Game3.state !== 'playing') return;
+                if(Game3.state !== 'playing' || Game3.isGeneratingTarget) return;
                 SFX.init(); InitAI.loadVoices();
                 
                 const pRate = parseFloat(document.getElementById('tts-rate').value);
@@ -1169,7 +1251,7 @@
                 const isMatch = (diffRate <= Game3.tolerance && diffPitch <= Game3.tolerance);
 
                 const btn = document.getElementById('btn-signal');
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> Đang truyền sóng âm...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> Đang truyền sóng...';
                 btn.disabled = true;
                 
                 const feedback = document.getElementById('g3-feedback');
@@ -1177,6 +1259,10 @@
                 feedback.className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-yellow";
                 SFX.playDrone();
                 
+                // Tạm dừng bộ đếm thay đổi mục tiêu trong lúc phát âm thanh
+                clearTimeout(Game3.targetChangeTimer);
+                clearInterval(Game3.visibilityTimer);
+
                 const text = document.getElementById('alien-text').value;
                 const finish = () => {
                     btn.innerHTML = '🔊 Phát Tín Hiệu';
@@ -1195,11 +1281,13 @@
                             Game3.state = 'done';
                             setTimeout(() => InitAI.showQuiz(), 2500);
                         } else {
-                            setTimeout(() => { Game3.generateTarget(); }, 2000);
+                            Game3.generateTarget();
                         }
                     } else {
                         feedback.innerText = "Tần số không khớp! Thất bại.";
                         feedback.className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red";
+                        // Nếu sai, tiếp tục đếm lại bộ đếm của mức độ khó (nếu có)
+                        if (Game3.state === 'playing') Game3.generateTarget(); 
                     }
                 };
 
