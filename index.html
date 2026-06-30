@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3. Giác Quan Của Máy – Công Nghệ Gì Đây? (khối 8)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- TensorFlow.js & BlazeFace -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        emerald: { 500: '#10b981' },
+                        crimson: { 500: '#dc2626' },
+                        orange: { 50: '#fff7ed', 100: '#ffedd5', 500: '#f97316', 600: '#ea580c' },
+                        amber: { 400: '#fbbf24', 500: '#f59e0b' },
+                        violet: { 500: '#8b5cf6' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #fff7ed; /* orange-50 */
+            overflow-x: hidden;
+        }
+
+        /* Animated Starry Particles Background */
+        .stars-container {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        .star-particle {
+            position: absolute; background-color: #f59e0b; border-radius: 50%;
+            animation: float-star linear infinite;
+        }
+        @keyframes float-star {
+            0% { transform: translateY(110vh) scale(0.5); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Navigation */
+        .floating-nav { box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.2); }
+        .tab-btn.active { background-color: #ea580c; color: white; font-weight: 700; }
+        .hidden-view { display: none !important; }
+
+        /* General Game Windows */
+        .game-window {
+            background: white; border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(255, 237, 213, 0.6); /* shadow-2xl orange-100 */
+        }
+
+        /* Game 1 Canvas */
+        #game-canvas { transform: scaleX(-1); }
+        #webcam-video { transform: scaleX(-1); display: none; }
+        .mouse-mode-canvas { transform: scaleX(1) !important; cursor: crosshair; }
+
+        /* Game 2 Animations */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        
+        .magic-projectile {
+            position: absolute; width: 40px; height: 40px; border-radius: 50%;
+            z-index: 50; top: 60%; left: 20%; transform: translate(-50%, -50%);
+            opacity: 0; pointer-events: none;
+        }
+        .shoot-bot { animation: shootBot 0.5s ease-in forwards; background: #10b981; box-shadow: 0 0 25px #10b981, 0 0 50px #10b981; }
+        .shoot-student { animation: shootStudent 0.5s ease-in forwards; background: #8b5cf6; box-shadow: 0 0 25px #8b5cf6, 0 0 50px #8b5cf6; }
+        
+        @keyframes shootBot {
+            0% { top: 60%; left: 20%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { top: 60%; left: 80%; opacity: 1; transform: translate(-50%, -50%) scale(2); }
+        }
+        @keyframes shootStudent {
+            0% { top: 60%; left: 80%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { top: 60%; left: 20%; opacity: 1; transform: translate(-50%, -50%) scale(2); }
+        }
+
+        /* Game 3 Waveform */
+        .waveform-bar {
+            width: 10px; height: 10px; background-color: #f59e0b; border-radius: 5px;
+            margin: 0 4px; transition: height 0.1s ease;
+        }
+        .waveform-active .waveform-bar:nth-child(odd) { animation: wave 0.8s infinite alternate ease-in-out; }
+        .waveform-active .waveform-bar:nth-child(even) { animation: wave 0.5s infinite alternate-reverse ease-in-out; }
+        @keyframes wave { 0% { height: 10px; } 100% { height: 70px; } }
+        
+        .fly-away { animation: flyAway 2s ease-in forwards; }
+        @keyframes flyAway {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-500px) scale(0.5); opacity: 0; }
+        }
+
+        /* General Confetti */
+        .confetti {
+            position: fixed; width: 10px; height: 10px; background-color: #f00;
+            animation: fall-confetti linear forwards; z-index: 9999; top: -20px;
+        }
+        @keyframes fall-confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-28 pb-10 text-slate-800" onclick="SFX.init()">
+
+    <!-- Animated Background -->
+    <div class="stars-container" id="stars-container"></div>
+
+    <!-- Navigation -->
+    <nav class="floating-nav fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-md border border-orange-100 p-1.5 rounded-full flex gap-1 w-[95%] max-w-4xl overflow-x-auto no-scrollbar">
+        <button onclick="InitAI.switchTab(0)" id="tab-0" class="tab-btn active flex-1 whitespace-nowrap px-4 py-3 rounded-full font-semibold text-orange-600 hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-sm md:text-base">
+            <i class="fa-solid fa-eye mr-2"></i>Thị Giác Máy Tính
+        </button>
+        <button onclick="InitAI.switchTab(1)" id="tab-1" class="tab-btn flex-1 whitespace-nowrap px-4 py-3 rounded-full font-semibold text-orange-600 hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-sm md:text-base">
+            <i class="fa-solid fa-microphone mr-2"></i>Giọng Nói Sang Văn Bản
+        </button>
+        <button onclick="InitAI.switchTab(2)" id="tab-2" class="tab-btn flex-1 whitespace-nowrap px-4 py-3 rounded-full font-semibold text-orange-600 hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-sm md:text-base">
+            <i class="fa-solid fa-volume-high mr-2"></i>Văn Bản Thành Giọng Nói
+        </button>
+    </nav>
+
+    <main class="w-full max-w-6xl mx-auto flex-1 p-4 relative flex flex-col items-center justify-center">
+
+        <!-- ========================================== -->
+        <!-- VIEW 0: GAME 1 (COMPUTER VISION) -->
+        <!-- ========================================== -->
+        <section id="view-0" class="view-section w-full game-window p-6 md:p-10 border border-orange-50">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl md:text-4xl font-black text-orange-600 mb-3 tracking-tight">
+                    <i class="fa-solid fa-crosshairs mr-3"></i>Biệt Đội Hứng Bóng Bằng Mũi
+                </h2>
+                <p class="text-slate-600 font-medium bg-orange-50 inline-block px-5 py-2 rounded-full border border-orange-200">
+                    Nhiệm vụ: Cấp quyền Camera, di chuyển đỉnh mũi của bạn để điều khiển chiếc rổ ảo hứng các quả bóng đa sắc màu rơi xuống!
+                </p>
+            </div>
+            
+            <div class="relative w-full max-w-4xl mx-auto bg-slate-900 rounded-3xl overflow-hidden shadow-inner aspect-[4/3] md:aspect-[16/9] border-4 border-slate-800">
+                <div id="cv-status" class="absolute inset-0 bg-slate-900/85 z-20 flex flex-col items-center justify-center text-white p-6 text-center backdrop-blur-sm">
+                    <i id="cv-status-icon" class="fa-solid fa-camera text-6xl mb-4 text-orange-400"></i>
+                    <h3 id="cv-status-title" class="text-2xl font-bold mb-2">Truy Cập Hệ Thống AI</h3>
+                    <p id="cv-status-text" class="text-slate-300 text-sm mb-6 max-w-md">Game sử dụng công nghệ nhận diện đỉnh mũi trực tiếp qua trình duyệt.</p>
+                    <div class="flex gap-4">
+                        <button onclick="Game1.start(false)" class="bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                            <i class="fa-solid fa-play mr-2"></i> Chơi bằng Camera
+                        </button>
+                        <button onclick="Game1.start(true)" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                            <i class="fa-solid fa-mouse-pointer mr-2"></i> Chế độ giả lập (Chuột)
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="game1-ui" class="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none hidden">
+                    <div class="bg-slate-900/70 backdrop-blur-md px-5 py-2 rounded-2xl border border-slate-700 shadow-lg">
+                        <span class="text-slate-300 font-bold uppercase tracking-wider text-xs block">Điểm số của bạn</span>
+                        <div class="flex items-baseline mt-1">
+                            <span id="g1-score" class="text-amber-400 font-black text-3xl">0</span> 
+                            <span class="text-slate-400 font-bold text-lg ml-1">/ 10</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/70 backdrop-blur-md px-5 py-2 rounded-2xl border border-slate-700 shadow-lg">
+                        <span class="text-slate-300 font-bold uppercase tracking-wider text-xs block">Thời gian còn lại</span>
+                        <div class="flex items-baseline mt-1 justify-end">
+                            <span id="g1-timer" class="text-emerald-400 font-black text-3xl">60</span><span class="text-emerald-400 text-lg ml-1">s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <video id="webcam-video" autoplay playsinline muted></video>
+                <canvas id="game-canvas" class="w-full h-full object-cover"></canvas>
+            </div>
+            <p id="g1-fallback-txt" class="text-center mt-4 text-orange-600 font-medium underline cursor-pointer hidden" onclick="Game1.start(true)">Không có Camera? Nhấp vào đây để chơi bằng Chuột máy tính.</p>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: GAME 2 (SPEECH TO TEXT) -->
+        <!-- ========================================== -->
+        <section id="view-1" class="view-section hidden-view w-full game-window p-6 md:p-10 border border-orange-50 flex flex-col items-center">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl md:text-4xl font-black text-emerald-600 mb-3 tracking-tight">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-3"></i>Đại Chiến Pháp Sư Phép Thuật AI
+                </h2>
+                <p class="text-slate-600 font-medium bg-emerald-50 inline-block px-5 py-2 rounded-full border border-emerald-200">
+                    Nhiệm vụ: Nhìn vào hình ảnh xuất hiện trên đầu nhân vật, đọc to tên vật thể đó để Pháp sư của bạn phóng phép thuật tấn công Bot AI trước khi bị phản đòn!
+                </p>
+            </div>
+
+            <!-- Duel Arena -->
+            <div id="duel-arena" class="w-full relative bg-slate-900 rounded-3xl p-6 overflow-hidden border-4 border-slate-800 h-[500px] flex justify-between items-center bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80')] bg-cover bg-center">
+                <div class="absolute inset-0 bg-slate-900/60"></div>
+                
+                <div id="projectile" class="magic-projectile"></div>
+
+                <!-- STUDENT SORCERER (LEFT) -->
+                <div class="relative z-10 flex flex-col items-center w-1/3">
+                    <div class="w-full flex justify-between mb-1">
+                        <span class="text-white font-bold text-sm">Pháp Sư Học Sinh</span>
+                    </div>
+                    <div class="w-full h-5 bg-slate-800 rounded-full overflow-hidden relative border-2 border-slate-600">
+                        <div id="student-hp-yellow" class="absolute top-0 left-0 h-full bg-yellow-400 w-full transition-all duration-700 ease-out"></div>
+                        <div id="student-hp-red" class="absolute top-0 left-0 h-full bg-emerald-500 w-full transition-all duration-200 ease-out"></div>
+                    </div>
+                    
+                    <div id="student-bubble" class="mt-6 mb-2 bg-white px-4 py-2 rounded-2xl shadow-lg border-4 border-emerald-400 relative opacity-0 transition-opacity">
+                        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-emerald-400"></div>
+                        <span id="student-emoji" class="text-5xl">🍎</span>
+                    </div>
+
+                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(16,185,129,0.8)] mt-2">🧙‍♂️</div>
+                </div>
+
+                <!-- BOT SORCERER (RIGHT) -->
+                <div class="relative z-10 flex flex-col items-center w-1/3">
+                    <div class="w-full flex justify-end mb-1">
+                        <span class="text-white font-bold text-sm">Pháp Sư Bot AI</span>
+                    </div>
+                    <div class="w-full h-5 bg-slate-800 rounded-full overflow-hidden relative border-2 border-slate-600">
+                        <div id="bot-hp-yellow" class="absolute top-0 right-0 h-full bg-yellow-400 w-full transition-all duration-700 ease-out origin-right"></div>
+                        <div id="bot-hp-red" class="absolute top-0 right-0 h-full bg-crimson-500 w-full transition-all duration-200 ease-out origin-right"></div>
+                    </div>
+
+                    <div class="text-7xl animate-bounce drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] mt-24">🤖</div>
+                </div>
+
+            </div>
+            
+            <div class="w-full max-w-2xl mt-8 flex flex-col items-center">
+                <button id="btn-mic" onmousedown="Game2.startListen()" onmouseup="Game2.stopListen()" ontouchstart="Game2.startListen()" ontouchend="Game2.stopListen()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-10 rounded-full shadow-xl shadow-emerald-500/50 transition-all select-none flex items-center text-lg active:scale-95 mb-4">
+                    <i class="fa-solid fa-microphone mr-3 text-2xl"></i> Nhấn và Giữ để Đọc Thần Chú
+                </button>
+                <div id="g2-fallback-area" class="w-full flex gap-2 hidden">
+                    <input type="text" id="fallback-spell" placeholder="Nhập tên vật thể (vd: quả táo)..." class="flex-1 px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 outline-none text-lg">
+                    <button onclick="Game2.checkSpell(document.getElementById('fallback-spell').value)" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700">Tung Chiêu</button>
+                </div>
+                <p class="text-center mt-3 text-orange-600 font-medium underline cursor-pointer" onclick="document.getElementById('g2-fallback-area').classList.remove('hidden')">Trình duyệt lỗi Micro? Nhấp vào đây để nhập chú ngữ bằng bàn phím.</p>
+                <p id="stt-feedback" class="mt-4 font-bold text-xl h-8 text-center text-slate-500"></p>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: GAME 3 (TEXT TO SPEECH) -->
+        <!-- ========================================== -->
+        <section id="view-2" class="view-section hidden-view w-full game-window p-6 md:p-10 border border-orange-50">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl md:text-4xl font-black text-amber-500 mb-3 tracking-tight">
+                    <i class="fa-solid fa-satellite-dish mr-3"></i>Phiên Dịch Viên Vũ Trụ: Cứu Hộ Đĩa Bay
+                </h2>
+                <p class="text-slate-600 font-medium bg-amber-50 inline-block px-5 py-2 rounded-full border border-amber-200 max-w-3xl">
+                    Nhiệm vụ: Nhập lời chào, điều chỉnh 2 thanh trượt Tốc độ và Cao độ sao cho giọng nói đạt tần số cực cao/nhanh hoặc cực trầm/chậm để nạp đầy 100% pin dịch thuật cho đĩa bay Alien!
+                </p>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Controls (Left) -->
+                <div class="flex-1 flex flex-col gap-6">
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-inner">
+                        <label class="block text-sm font-bold text-slate-700 mb-3 uppercase">Lời chào</label>
+                        <textarea id="alien-text" class="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-amber-500 outline-none resize-none font-medium h-32 text-lg">Hỡi sinh vật vũ trụ, chúng tôi đến trong hòa bình!</textarea>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-inner flex flex-col justify-center gap-8 flex-1">
+                        <div>
+                            <div class="flex justify-between items-end mb-3">
+                                <label class="font-bold text-slate-700"><i class="fa-solid fa-gauge-high mr-2 text-amber-500"></i>Tốc độ đọc giọng nói (Rate)</label>
+                                <span id="val-rate" class="font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-lg text-lg">1.0</span>
+                            </div>
+                            <input type="range" id="tts-rate" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full h-3 bg-slate-300 rounded-full appearance-none" oninput="document.getElementById('val-rate').innerText = parseFloat(this.value).toFixed(1)">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-end mb-3">
+                                <label class="font-bold text-slate-700"><i class="fa-solid fa-wave-square mr-2 text-amber-500"></i>Cao độ tần số (Pitch)</label>
+                                <span id="val-pitch" class="font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-lg text-lg">1.0</span>
+                            </div>
+                            <input type="range" id="tts-pitch" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full h-3 bg-slate-300 rounded-full appearance-none" oninput="document.getElementById('val-pitch').innerText = parseFloat(this.value).toFixed(1)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UFO Canvas (Right) -->
+                <div class="flex-1 bg-slate-900 rounded-3xl p-8 border-4 border-slate-800 flex flex-col items-center justify-center relative overflow-hidden h-[400px] lg:h-auto">
+                    <!-- Space bg -->
+                    <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(#fbbf24 1px, transparent 1px); background-size: 30px 30px;"></div>
+                    
+                    <div id="ufo-container" class="z-10 text-9xl mb-8 animate-pulse drop-shadow-[0_0_30px_rgba(251,191,36,0.9)]">
+                        🛸
+                    </div>
+                    
+                    <div id="waveform" class="flex h-20 items-end justify-center z-10 mb-8">
+                        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+                        <div class="waveform-bar"></div>
+                    </div>
+
+                    <div class="z-10 w-full max-w-sm">
+                        <div class="flex justify-between text-white font-bold mb-2 uppercase text-sm tracking-wider">
+                            <span>Năng lượng pin dịch thuật:</span>
+                            <span id="battery-text" class="text-amber-400 font-black text-xl">0%</span>
+                        </div>
+                        <div class="h-8 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden p-1 shadow-inner">
+                            <div id="battery-fill" class="h-full bg-gradient-to-r from-amber-500 to-yellow-300 rounded-full w-0 transition-all duration-1000 ease-out shadow-[0_0_10px_#f59e0b]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 flex justify-center">
+                <button onclick="Game3.play()" id="btn-signal" class="bg-amber-500 hover:bg-amber-600 text-white font-black text-2xl py-5 px-12 rounded-full shadow-2xl shadow-amber-500/50 flex items-center transition-transform hover:-translate-y-1">
+                    🔊 Phát tín hiệu sóng âm AI
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 w-full max-w-2xl relative border-4 border-orange-100 transform transition-all" id="quiz-card">
+            <div class="text-center mb-8">
+                <h3 class="text-3xl md:text-4xl font-black text-orange-600 tracking-tight mb-2">Thử Thách Nhận Diện Giác Quan 🧠</h3>
+                <p class="text-slate-600 mt-2 font-medium text-lg border-b-2 pb-6 border-orange-50">Đố bạn trò chơi tương tác vừa rồi đã sử dụng giác quan nào của máy thông minh?</p>
+            </div>
+            
+            <div class="space-y-4" id="quiz-options">
+                <button onclick="InitAI.checkAnswer(0, this)" class="quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-slate-200 hover:border-orange-500 hover:bg-orange-50 font-bold text-slate-700 transition-all flex items-center text-xl shadow-sm">A. Thị giác máy tính (Computer Vision)</button>
+                <button onclick="InitAI.checkAnswer(1, this)" class="quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-slate-200 hover:border-orange-500 hover:bg-orange-50 font-bold text-slate-700 transition-all flex items-center text-xl shadow-sm">B. Giọng nói sang văn bản (Speech to Text)</button>
+                <button onclick="InitAI.checkAnswer(2, this)" class="quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-slate-200 hover:border-orange-500 hover:bg-orange-50 font-bold text-slate-700 transition-all flex items-center text-xl shadow-sm">C. Văn bản thành giọng nói (Text to Speech)</button>
+            </div>
+
+            <div id="quiz-feedback" class="mt-8 text-center font-black text-2xl hidden"></div>
+            
+            <div id="quiz-next" class="mt-8 flex justify-center hidden">
+                <button onclick="InitAI.closeQuiz()" class="bg-orange-600 text-white font-bold text-xl py-4 px-12 rounded-full shadow-xl shadow-orange-600/40 hover:bg-orange-700 hover:-translate-y-1 transition-all">
+                    Chuyển sang phần tiếp theo <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confetti-container"></div>
+
+    <script>
+        // ==========================================
+        // SFX AUDIO ENGINE
+        // ==========================================
+        const SFX = {
+            ctx: null,
+            init: () => {
+                if (!SFX.ctx) {
+                    const AudioC = window.AudioContext || window.webkitAudioContext;
+                    if(AudioC) SFX.ctx = new AudioC();
+                }
+                if (SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume();
+            },
+            playTing: () => {
+                if(!SFX.ctx) return;
+                const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, SFX.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1800, SFX.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.5, SFX.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, SFX.ctx.currentTime + 0.3);
+                osc.connect(gain); gain.connect(SFX.ctx.destination);
+                osc.start(); osc.stop(SFX.ctx.currentTime + 0.3);
+            },
+            playExplosion: () => {
+                if(!SFX.ctx) return;
+                const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, SFX.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, SFX.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.6, SFX.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, SFX.ctx.currentTime + 0.4);
+                osc.connect(gain); gain.connect(SFX.ctx.destination);
+                osc.start(); osc.stop(SFX.ctx.currentTime + 0.4);
+            },
+            playDrone: () => {
+                if(!SFX.ctx) return;
+                const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(50, SFX.ctx.currentTime);
+                gain.gain.setValueAtTime(0, SFX.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.3, SFX.ctx.currentTime + 0.5);
+                gain.gain.linearRampToValueAtTime(0, SFX.ctx.currentTime + 3.0);
+                osc.connect(gain); gain.connect(SFX.ctx.destination);
+                osc.start(); osc.stop(SFX.ctx.currentTime + 3.0);
+            },
+            playIgnition: () => {
+                if(!SFX.ctx) return;
+                const osc = SFX.ctx.createOscillator(); const gain = SFX.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(50, SFX.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, SFX.ctx.currentTime + 1.5);
+                gain.gain.setValueAtTime(0, SFX.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.5, SFX.ctx.currentTime + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, SFX.ctx.currentTime + 1.6);
+                osc.connect(gain); gain.connect(SFX.ctx.destination);
+                osc.start(); osc.stop(SFX.ctx.currentTime + 1.6);
+            }
+        };
+
+        // Initialize animated stars
+        const initStars = () => {
+            const container = document.getElementById('stars-container');
+            for(let i=0; i<30; i++) {
+                let star = document.createElement('div');
+                star.className = 'star-particle';
+                star.style.left = Math.random() * 100 + 'vw';
+                const size = Math.random() * 4 + 2;
+                star.style.width = size + 'px'; star.style.height = size + 'px';
+                star.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(star);
+            }
+        };
+        initStars();
+
+        // ==========================================
+        // CORE STATE & QUIZ
+        // ==========================================
+        const appState = {
+            activeTab: 0
+        };
+
+        const InitAI = {
+            stopAll: () => {
+                Game1.stop();
+                Game2.reset();
+                if(window.speechSynthesis) window.speechSynthesis.cancel();
+            },
+            switchTab: (index) => {
+                SFX.init();
+                InitAI.stopAll();
+                appState.activeTab = index;
+                
+                document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                    if(i === index) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+                document.querySelectorAll('.view-section').forEach((view, i) => {
+                    if(i === index) view.classList.remove('hidden-view');
+                    else view.classList.add('hidden-view');
+                });
+            },
+            showQuiz: () => {
+                const modal = document.getElementById('quiz-modal');
+                document.getElementById('quiz-feedback').classList.add('hidden');
+                document.getElementById('quiz-next').classList.add('hidden');
+                
+                document.querySelectorAll('.quiz-option').forEach(btn => {
+                    btn.className = "quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-slate-200 hover:border-orange-500 hover:bg-orange-50 font-bold text-slate-700 transition-all flex items-center text-xl shadow-sm";
+                    btn.disabled = false;
+                });
+                
+                modal.classList.remove('hidden');
+            },
+            checkAnswer: (index, btn) => {
+                if (btn.disabled) return;
+                const feedback = document.getElementById('quiz-feedback');
+                SFX.init();
+                
+                if (index === appState.activeTab) {
+                    btn.className = "quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-700 transition-all flex items-center text-xl shadow-md scale-[1.02]";
+                    feedback.innerText = "Chính xác! Bạn đã giúp máy tính vận dụng thành công giác quan này để tương tác tuyệt vời! 🎉";
+                    feedback.className = "mt-8 text-center font-black text-2xl text-emerald-600 block";
+                    document.querySelectorAll('.quiz-option').forEach(b => { b.disabled = true; });
+                    document.getElementById('quiz-next').classList.remove('hidden');
+                    
+                    // Confetti
+                    const container = document.getElementById('confetti-container');
+                    container.innerHTML = '';
+                    const colors = ['#10b981', '#f59e0b', '#ea580c', '#8b5cf6', '#3b82f6'];
+                    for(let i=0; i<80; i++) {
+                        let conf = document.createElement('div');
+                        conf.className = 'confetti';
+                        conf.style.left = Math.random() * 100 + 'vw';
+                        conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        conf.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                        container.appendChild(conf);
+                    }
+                } else {
+                    btn.className = "quiz-option w-full text-left px-8 py-5 rounded-2xl border-2 border-crimson-500 bg-red-50 font-bold text-crimson-500 transition-all flex items-center text-xl animate-shake";
+                    feedback.innerText = "Chưa chính xác rồi! Hãy ngẫm lại xem công nghệ nào vừa xử lý hành động của bạn nhé.";
+                    feedback.className = "mt-6 text-center font-bold text-xl text-crimson-500 block";
+                    setTimeout(() => btn.classList.remove('animate-shake'), 500);
+                }
+            },
+            closeQuiz: () => {
+                document.getElementById('quiz-modal').classList.add('hidden');
+                document.getElementById('confetti-container').innerHTML = '';
+                if (appState.activeTab < 2) InitAI.switchTab(appState.activeTab + 1);
+            }
+        };
+
+        // ==========================================
+        // GAME 1: COMPUTER VISION (Nose Track)
+        // ==========================================
+        const Game1 = {
+            model: null, stream: null, ctx: null, reqId: null,
+            isRunning: false, mouseMode: false,
+            basket: { x: 320, width: 120, height: 25, color: '#f59e0b' },
+            items: [], particles: [], score: 0, target: 10, time: 60, timerInterval: null,
+            canvas: document.getElementById('game-canvas'),
+            video: document.getElementById('webcam-video'),
+
+            start: async (useMouse) => {
+                SFX.init();
+                Game1.mouseMode = useMouse;
+                document.getElementById('cv-status-icon').className = "fa-solid fa-spinner fa-spin text-6xl mb-4 text-orange-400";
+                
+                if(useMouse) {
+                    Game1.canvas.classList.add('mouse-mode-canvas');
+                    Game1.canvas.width = 640; Game1.canvas.height = 480;
+                    Game1.ctx = Game1.canvas.getContext('2d');
+                    
+                    Game1.canvas.addEventListener('mousemove', (e) => {
+                        const rect = Game1.canvas.getBoundingClientRect();
+                        const scaleX = Game1.canvas.width / rect.width;
+                        Game1.basket.x = (e.clientX - rect.left) * scaleX;
+                    });
+                    
+                    document.getElementById('cv-status').classList.add('hidden');
+                    document.getElementById('game1-ui').classList.remove('hidden');
+                    document.getElementById('g1-fallback-txt').classList.add('hidden');
+                    Game1.resume();
+                } else {
+                    document.getElementById('g1-fallback-txt').classList.remove('hidden');
+                    Game1.canvas.classList.remove('mouse-mode-canvas');
+                    try {
+                        await tf.setBackend('webgl');
+                        if (!Game1.model) Game1.model = await blazeface.load();
+                        Game1.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                        Game1.video.srcObject = Game1.stream;
+                        Game1.video.onloadedmetadata = () => {
+                            Game1.video.play();
+                            Game1.canvas.width = Game1.video.videoWidth; Game1.canvas.height = Game1.video.videoHeight;
+                            Game1.ctx = Game1.canvas.getContext('2d');
+                            document.getElementById('cv-status').classList.add('hidden');
+                            document.getElementById('game1-ui').classList.remove('hidden');
+                            document.getElementById('g1-fallback-txt').classList.add('hidden');
+                            Game1.resume();
+                        };
+                    } catch(e) {
+                        alert("Lỗi Camera. Vui lòng bấm vào Fallback để dùng chuột.");
+                        document.getElementById('cv-status-icon').className = "fa-solid fa-camera text-6xl mb-4 text-orange-400";
+                    }
+                }
+            },
+            resume: () => {
+                if (Game1.isRunning) return;
+                Game1.isRunning = true; Game1.score = 0; Game1.time = 60; Game1.items = []; Game1.particles = [];
+                document.getElementById('g1-score').innerText = Game1.score;
+                document.getElementById('g1-timer').innerText = Game1.time;
+                
+                clearInterval(Game1.timerInterval);
+                Game1.timerInterval = setInterval(() => {
+                    Game1.time--;
+                    document.getElementById('g1-timer').innerText = Game1.time;
+                    if(Game1.time <= 0) {
+                        Game1.stop(); InitAI.showQuiz();
+                    }
+                }, 1000);
+
+                Game1.RenderLoop();
+            },
+            stop: () => {
+                Game1.isRunning = false;
+                clearInterval(Game1.timerInterval);
+                if(Game1.reqId) cancelAnimationFrame(Game1.reqId);
+                if(Game1.stream) { Game1.stream.getTracks().forEach(t => t.stop()); Game1.stream = null; }
+            },
+            createParticles: (x, y, color) => {
+                for(let i=0; i<15; i++) {
+                    Game1.particles.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
+                        life: 1.0, color: color, size: Math.random() * 4 + 2
+                    });
+                }
+            },
+            RenderLoop: async () => {
+                if (!Game1.isRunning) return;
+                Game1.ctx.clearRect(0, 0, Game1.canvas.width, Game1.canvas.height);
+                
+                if(!Game1.mouseMode) {
+                    Game1.ctx.drawImage(Game1.video, 0, 0, Game1.canvas.width, Game1.canvas.height);
+                    const preds = await Game1.model.estimateFaces(Game1.video, false);
+                    if (preds.length > 0) {
+                        const nose = preds[0].landmarks[2];
+                        const targetX = Game1.canvas.width - nose[0]; // Mirror mapping
+                        Game1.basket.x += (targetX - Game1.basket.x) * 0.25; // Lerp smoothing
+                        
+                        // Draw nose dot
+                        Game1.ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
+                        Game1.ctx.beginPath(); Game1.ctx.arc(nose[0], nose[1], 8, 0, 2*Math.PI); Game1.ctx.fill();
+                    }
+                } else {
+                    Game1.ctx.fillStyle = '#0f172a'; // dark bg for mouse mode
+                    Game1.ctx.fillRect(0, 0, Game1.canvas.width, Game1.canvas.height);
+                }
+
+                // Spawning Balls
+                if(Math.random() < 0.03 + (Game1.score * 0.002)) {
+                    const colors = ['#3b82f6', '#ec4899', '#10b981', '#8b5cf6'];
+                    Game1.items.push({
+                        x: Math.random() * (Game1.canvas.width - 40) + 20, y: -30, 
+                        radius: Math.random() * 15 + 10,
+                        speed: Math.random() * 3 + 3,
+                        color: colors[Math.floor(Math.random()*colors.length)]
+                    });
+                }
+
+                // Draw Basket
+                let bX = Game1.mouseMode ? Game1.basket.x : (Game1.canvas.width - Game1.basket.x);
+                let basketDrawX = bX - Game1.basket.width/2;
+                let basketDrawY = Game1.canvas.height - Game1.basket.height - 20;
+                
+                Game1.ctx.fillStyle = Game1.basket.color;
+                // Draw rounded rect basket
+                Game1.ctx.beginPath(); Game1.ctx.roundRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height, 10); Game1.ctx.fill();
+                Game1.ctx.fillStyle = '#fff'; Game1.ctx.font = 'bold 14px Inter'; Game1.ctx.textAlign='center';
+                Game1.ctx.fillText("GIỎ HỨNG QUÀ", bX, basketDrawY + 17);
+
+                // Items
+                for(let i=Game1.items.length-1; i>=0; i--) {
+                    let it = Game1.items[i]; it.y += it.speed;
+                    let vX = Game1.mouseMode ? it.x : (Game1.canvas.width - it.x);
+                    
+                    // Gradient ball
+                    let grd = Game1.ctx.createRadialGradient(vX-5, it.y-5, 2, vX, it.y, it.radius);
+                    grd.addColorStop(0, "white"); grd.addColorStop(1, it.color);
+                    Game1.ctx.fillStyle = grd;
+                    Game1.ctx.beginPath(); Game1.ctx.arc(vX, it.y, it.radius, 0, 2*Math.PI); Game1.ctx.fill();
+
+                    // Collision
+                    if(it.y+it.radius >= basketDrawY && it.y <= basketDrawY+Game1.basket.height) {
+                        if(Math.abs(it.x - Game1.basket.x) < Game1.basket.width/2 + it.radius) {
+                            Game1.score++; 
+                            document.getElementById('g1-score').innerText = Game1.score;
+                            SFX.playTing();
+                            Game1.createParticles(vX, it.y, it.color);
+                            Game1.items.splice(i,1);
+                            
+                            if(Game1.score >= Game1.target) {
+                                Game1.stop();
+                                setTimeout(() => InitAI.showQuiz(), 1000);
+                                return;
+                            }
+                            continue;
+                        }
+                    }
+                    if(it.y > Game1.canvas.height+50) Game1.items.splice(i,1);
+                }
+
+                // Draw Particles
+                for(let i=Game1.particles.length-1; i>=0; i--) {
+                    let p = Game1.particles[i];
+                    p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                    if(p.life <= 0) { Game1.particles.splice(i,1); continue; }
+                    Game1.ctx.globalAlpha = p.life;
+                    Game1.ctx.fillStyle = p.color;
+                    Game1.ctx.beginPath(); Game1.ctx.arc(p.x, p.y, p.size, 0, 2*Math.PI); Game1.ctx.fill();
+                    Game1.ctx.globalAlpha = 1.0;
+                }
+
+                Game1.reqId = requestAnimationFrame(Game1.RenderLoop);
+            }
+        };
+
+        // ==========================================
+        // GAME 2: SPEECH TO TEXT (MAGIC DUEL)
+        // ==========================================
+        const Game2 = {
+            recog: null, botInterval: null,
+            studentHP: 100, botHP: 100,
+            words: [
+                { word: "quả táo", emoji: "🍎" }, { word: "con mèo", emoji: "🐱" }, 
+                { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" }
+            ],
+            currentTarget: null,
+            
+            reset: () => {
+                Game2.studentHP = 100; Game2.botHP = 100;
+                Game2.updateHP('student', 100); Game2.updateHP('bot', 100);
+                clearInterval(Game2.botInterval);
+                document.getElementById('student-bubble').classList.remove('opacity-100');
+                document.getElementById('student-bubble').classList.add('opacity-0');
+                Game2.newTurn();
+                
+                Game2.botInterval = setInterval(() => {
+                    if(Game2.studentHP > 0 && Game2.botHP > 0) {
+                        Game2.botAttack();
+                    }
+                }, 6000); // bot counter attacks every 6s
+            },
+            updateHP: (who, val) => {
+                // High fidelity HP: red drops instantly, yellow drops slowly
+                document.getElementById(`${who}-hp-red`).style.width = val + '%';
+                setTimeout(() => {
+                    document.getElementById(`${who}-hp-yellow`).style.width = val + '%';
+                }, 100); // short delay to start the smooth yellow transition
+            },
+            newTurn: () => {
+                if(Game2.studentHP <= 0 || Game2.botHP <= 0) return;
+                Game2.currentTarget = Game2.words[Math.floor(Math.random() * Game2.words.length)];
+                document.getElementById('student-emoji').innerText = Game2.currentTarget.emoji;
+                document.getElementById('student-bubble').classList.remove('opacity-0');
+                document.getElementById('student-bubble').classList.add('opacity-100');
+                document.getElementById('stt-feedback').innerText = "";
+            },
+            initSTT: () => {
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if(!SR) return false;
+                Game2.recog = new SR(); Game2.recog.lang = 'vi-VN';
+                Game2.recog.onresult = (e) => {
+                    const text = e.results[0][0].transcript;
+                    document.getElementById('stt-feedback').innerText = `Nhận diện: "${text}"`;
+                    if(e.results[0].isFinal) Game2.checkSpell(text);
+                };
+                Game2.recog.onend = () => document.getElementById('btn-mic').classList.remove('scale-110');
+                return true;
+            },
+            startListen: () => {
+                SFX.init();
+                if(!Game2.recog && !Game2.initSTT()) { alert("Trình duyệt không hỗ trợ. Vui lòng dùng khung nhập liệu."); document.getElementById('g2-fallback-area').classList.remove('hidden'); return; }
+                try { Game2.recog.start(); document.getElementById('btn-mic').classList.add('scale-110'); } catch(e){}
+            },
+            stopListen: () => {
+                if(Game2.recog) try { Game2.recog.stop(); } catch(e){}
+            },
+            checkSpell: (text) => {
+                SFX.init();
+                const clean = text.toLowerCase().trim();
+                const targetWord = Game2.currentTarget.word.toLowerCase();
+                
+                // Flexible inclusion logic
+                let isMatch = false;
+                const coreWord = targetWord.split(" ")[1] || targetWord; // extract core noun roughly
+                if (clean.includes(targetWord) || clean.includes(coreWord)) isMatch = true;
+
+                if(isMatch) {
+                    Game2.studentAttack();
+                } else {
+                    document.getElementById('stt-feedback').innerText = "Chưa đúng từ khóa! Hãy thử lại.";
+                }
+            },
+            studentAttack: () => {
+                document.getElementById('stt-feedback').innerText = "Thần chú chính xác!";
+                document.getElementById('student-bubble').classList.remove('opacity-100');
+                document.getElementById('student-bubble').classList.add('opacity-0');
+                
+                const proj = document.getElementById('projectile');
+                proj.className = "magic-projectile shoot-bot";
+                
+                setTimeout(() => {
+                    SFX.playExplosion();
+                    document.getElementById('duel-arena').classList.add('animate-shake');
+                    setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
+                    
+                    Game2.botHP = Math.max(0, Game2.botHP - 25);
+                    Game2.updateHP('bot', Game2.botHP);
+                    proj.className = "magic-projectile"; 
+                    
+                    if(Game2.botHP <= 0) {
+                        clearInterval(Game2.botInterval);
+                        setTimeout(() => InitAI.showQuiz(), 1500);
+                    } else {
+                        setTimeout(Game2.newTurn, 1500);
+                    }
+                }, 500);
+            },
+            botAttack: () => {
+                SFX.playExplosion();
+                const proj = document.getElementById('projectile');
+                proj.className = "magic-projectile shoot-student";
+                
+                setTimeout(() => {
+                    document.getElementById('duel-arena').classList.add('animate-shake');
+                    setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
+                    
+                    Game2.studentHP = Math.max(0, Game2.studentHP - 15);
+                    Game2.updateHP('student', Game2.studentHP);
+                    proj.className = "magic-projectile";
+                    
+                    if(Game2.studentHP <= 0) {
+                        clearInterval(Game2.botInterval);
+                        alert("Học sinh đã hết máu! Game sẽ chơi lại.");
+                        Game2.reset();
+                    }
+                }, 500);
+            }
+        };
+
+        // ==========================================
+        // GAME 3: TEXT TO SPEECH (UFO)
+        // ==========================================
+        const Game3 = {
+            battery: 0,
+            play: () => {
+                SFX.init();
+                const text = document.getElementById('alien-text').value;
+                const rate = parseFloat(document.getElementById('tts-rate').value);
+                const pitch = parseFloat(document.getElementById('tts-pitch').value);
+                
+                const btn = document.getElementById('btn-signal');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> Đang truyền sóng âm...';
+                btn.disabled = true;
+                
+                document.getElementById('waveform').classList.add('waveform-active');
+                SFX.playDrone();
+                
+                if('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utt = new SpeechSynthesisUtterance(text);
+                    utt.lang = 'vi-VN'; utt.rate = rate; utt.pitch = pitch;
+                    
+                    const finish = () => {
+                        btn.innerHTML = '🔊 Phát tín hiệu sóng âm AI';
+                        btn.disabled = false;
+                        document.getElementById('waveform').classList.remove('waveform-active');
+                        Game3.checkWin(rate, pitch);
+                    };
+                    utt.onend = finish; utt.onerror = finish;
+                    window.speechSynthesis.speak(utt);
+                    setTimeout(finish, 6000); 
+                } else {
+                    alert("Trình duyệt không hỗ trợ tổng hợp giọng nói.");
+                    document.getElementById('waveform').classList.remove('waveform-active');
+                    btn.disabled = false;
+                }
+            },
+            checkWin: (rate, pitch) => {
+                // High & Fast OR Deep & Slow
+                if ((rate > 1.6 && pitch > 1.6) || (rate < 0.6 && pitch < 0.6)) {
+                    Game3.battery += 50;
+                    document.getElementById('battery-fill').style.width = Game3.battery + '%';
+                    
+                    if(Game3.battery >= 100) {
+                        SFX.playIgnition();
+                        document.getElementById('ufo-container').classList.add('fly-away');
+                        setTimeout(() => InitAI.showQuiz(), 2500);
+                    }
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
