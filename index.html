@@ -10,6 +10,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
 
     <script>
         tailwind.config = {
@@ -44,7 +45,6 @@
 
         #game-canvas { transform: scaleX(-1); }
         #webcam-video { transform: scaleX(-1); display: none; }
-        .mouse-mode-canvas { transform: scaleX(1) !important; cursor: crosshair; }
 
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -96,13 +96,13 @@
 
     <nav class="floating-nav fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-md border border-orange-100 p-1.5 rounded-full flex gap-1 w-[95%] max-w-4xl overflow-x-auto no-scrollbar">
         <button onclick="InitAI.switchTab(0)" id="tab-0" class="tab-btn active flex-1 whitespace-nowrap px-4 py-3 rounded-full font-semibold text-orange-600 hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-sm md:text-base">
-            <i class="fa-solid fa-eye mr-2"></i>Thị Giác Máy Tính
+            <i class="fa-solid fa-eye mr-2"></i>Game 1
         </button>
         <button onclick="InitAI.switchTab(1)" id="tab-1" class="tab-btn flex-1 whitespace-nowrap px-4 py-3 rounded-full font-semibold text-orange-600 hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-sm md:text-base">
-            <i class="fa-solid fa-microphone mr-2"></i>Giọng Nói
+            <i class="fa-solid fa-microphone mr-2"></i>Game 2
         </button>
         <button onclick="InitAI.switchTab(2)" id="tab-2" class="tab-btn flex-1 whitespace-nowrap px-4 py-3 rounded-full font-semibold text-orange-600 hover:bg-orange-50 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-sm md:text-base">
-            <i class="fa-solid fa-volume-high mr-2"></i>Văn Bản
+            <i class="fa-solid fa-volume-high mr-2"></i>Game 3
         </button>
     </nav>
 
@@ -123,22 +123,19 @@
                 <div id="g1-tutorial-overlay" class="absolute inset-0 bg-slate-900/90 z-[60] flex flex-col items-center justify-center p-6 text-center backdrop-blur-md">
                     <h3 class="text-4xl font-black text-orange-400 mb-6 drop-shadow-lg">Cách chơi</h3>
                     <p class="text-white text-xl font-medium max-w-md mb-8 leading-relaxed">
-                        Cấp quyền Camera. Di chuyển <b class="text-amber-400">Đỉnh mũi</b> của bạn để điều khiển chiếc rổ ảo hứng các quả bóng rơi xuống!
+                        Cấp quyền Camera. Di chuyển <b class="text-amber-400">Đỉnh mũi</b> của bạn qua trái phải để điều khiển chiếc rổ ảo hứng các quả bóng rơi xuống!
                     </p>
                     <button onclick="Game1.closeTutorial()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-12 rounded-full shadow-lg transition-transform hover:scale-105 text-xl border-2 border-orange-400">Tiếp tục</button>
                 </div>
 
                 <div id="g1-start-overlay" class="absolute inset-0 bg-slate-900/90 z-[55] flex flex-col items-center justify-center p-6 text-center backdrop-blur-md hidden">
-                    <h3 class="text-3xl font-black text-white mb-8">Chọn Phương Thức Chơi</h3>
-                    <div class="flex gap-4">
-                        <button onclick="Game1.start(false)" class="bg-orange-500 hover:bg-orange-600 text-white font-black py-4 px-8 rounded-full shadow-xl shadow-orange-500/50 text-xl transition-transform hover:scale-105 border-2 border-orange-400"><i class="fa-solid fa-camera mr-2"></i> Chơi Bằng Camera AI</button>
-                        <button onclick="Game1.start(true)" class="bg-slate-600 hover:bg-slate-500 text-white font-black py-4 px-8 rounded-full shadow-xl text-xl transition-transform hover:scale-105 border-2 border-slate-400"><i class="fa-solid fa-mouse-pointer mr-2"></i> Chơi Bằng Chuột</button>
-                    </div>
+                    <h3 class="text-3xl font-black text-white mb-8">Bạn Đã Sẵn Sàng Chưa?</h3>
+                    <button onclick="Game1.start()" class="bg-orange-500 hover:bg-orange-600 text-white font-black py-4 px-12 rounded-full shadow-xl shadow-orange-500/50 text-xl transition-transform hover:scale-105 border-2 border-orange-400"><i class="fa-solid fa-camera mr-2"></i> Bật Camera AI Để Chơi</button>
                 </div>
 
                 <div id="g1-loading-overlay" class="absolute inset-0 bg-slate-900/90 z-[50] flex flex-col items-center justify-center text-center hidden">
                     <i class="fa-solid fa-spinner fa-spin text-6xl text-orange-400 mb-4"></i>
-                    <p class="text-white text-xl font-bold">Đang kết nối Camera AI...</p>
+                    <p class="text-white text-xl font-bold">Đang tải mô hình Camera AI...</p>
                 </div>
 
                 <div id="g1-countdown-overlay" class="absolute inset-0 bg-slate-900/80 z-[45] flex items-center justify-center backdrop-blur-md hidden">
@@ -333,19 +330,17 @@
                     </div>
                 </div>
 
-                <!-- Right Panel (Waveforms) -->
+                <!-- Right Panel -->
                 <div class="flex-1 bg-slate-900 rounded-3xl p-6 border-4 border-slate-800 flex flex-col items-center justify-between relative overflow-hidden h-[400px] w-full lg:w-1/2">
                     <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(#fbbf24 1px, transparent 1px); background-size: 30px 30px;"></div>
                     
                     <div id="ufo-container" class="z-10 text-6xl mb-2 animate-pulse drop-shadow-[0_0_20px_rgba(251,191,36,0.9)] mt-2">🛸</div>
                     
-                    <!-- SVG WAVEFORM -->
                     <div class="relative w-full h-[200px] bg-slate-950/80 rounded-2xl border-2 border-slate-700 overflow-hidden z-10 flex-1 my-4 shadow-inner flex items-center">
                         <div class="absolute top-2 left-4 flex gap-6 z-20">
                             <span class="flex items-center text-xs font-bold text-violet-400 drop-shadow-md"><div class="w-3 h-3 bg-violet-500 rounded-full mr-2"></div>SÓNG UFO</span>
                             <span class="flex items-center text-xs font-bold text-amber-400 drop-shadow-md"><div class="w-3 h-3 bg-amber-500 rounded-full mr-2"></div>SÓNG CỦA BẠN</span>
                         </div>
-                        <!-- X-axis line -->
                         <div class="absolute w-full h-[1px] bg-slate-700 top-1/2"></div>
                         <svg viewBox="0 0 800 200" class="w-full h-full" preserveAspectRatio="none">
                             <path id="path-ufo" d="" fill="none" stroke="#8b5cf6" stroke-width="4" stroke-dasharray="12 6" class="opacity-80"/>
@@ -548,7 +543,7 @@
         // GAME 1
         // ==========================================
         const Game1 = {
-            model: null, stream: null, ctx: null, reqId: null, isRunning: false, mouseMode: false,
+            model: null, stream: null, ctx: null, reqId: null, trackId: null, isRunning: false,
             basket: { x: 320, width: 120, height: 25, color: '#f59e0b' },
             items: [], particles: [], score: 0, target: 10, time: 60, timerInterval: null,
             canvas: document.getElementById('game-canvas'), video: document.getElementById('webcam-video'),
@@ -565,37 +560,25 @@
                 document.getElementById('g1-tutorial-overlay').classList.add('hidden');
                 document.getElementById('g1-start-overlay').classList.remove('hidden');
             },
-            start: async (useMouse) => {
-                SFX.init(); Game1.mouseMode = useMouse;
+            start: async () => {
+                SFX.init();
                 document.getElementById('g1-start-overlay').classList.add('hidden');
-                
-                if(useMouse) {
-                    Game1.canvas.classList.add('mouse-mode-canvas');
-                    Game1.canvas.width = 640; Game1.canvas.height = 480; Game1.ctx = Game1.canvas.getContext('2d');
-                    Game1.canvas.addEventListener('mousemove', (e) => {
-                        const rect = Game1.canvas.getBoundingClientRect(); const scaleX = Game1.canvas.width / rect.width;
-                        Game1.basket.x = (e.clientX - rect.left) * scaleX;
-                    });
-                    Game1.startCountdown();
-                } else {
-                    document.getElementById('g1-loading-overlay').classList.remove('hidden');
-                    Game1.canvas.classList.remove('mouse-mode-canvas');
-                    try {
-                        await tf.setBackend('webgl');
-                        if (!Game1.model) Game1.model = await blazeface.load();
-                        Game1.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
-                        Game1.video.srcObject = Game1.stream;
-                        Game1.video.onloadedmetadata = () => {
-                            Game1.video.play(); Game1.canvas.width = Game1.video.videoWidth; Game1.canvas.height = Game1.video.videoHeight;
-                            Game1.ctx = Game1.canvas.getContext('2d');
-                            document.getElementById('g1-loading-overlay').classList.add('hidden');
-                            Game1.startCountdown();
-                        };
-                    } catch(e) {
-                        alert("Lỗi Camera. Vui lòng F5 và chọn Chơi Bằng Chuột.");
+                document.getElementById('g1-loading-overlay').classList.remove('hidden');
+                try {
+                    await tf.setBackend('webgl');
+                    if (!Game1.model) Game1.model = await blazeface.load();
+                    Game1.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                    Game1.video.srcObject = Game1.stream;
+                    Game1.video.onloadedmetadata = () => {
+                        Game1.video.play(); Game1.canvas.width = Game1.video.videoWidth; Game1.canvas.height = Game1.video.videoHeight;
+                        Game1.ctx = Game1.canvas.getContext('2d');
                         document.getElementById('g1-loading-overlay').classList.add('hidden');
-                        document.getElementById('g1-start-overlay').classList.remove('hidden');
-                    }
+                        Game1.startCountdown();
+                    };
+                } catch(e) {
+                    alert("Lỗi Camera. Vui lòng cấp quyền Camera để chơi.");
+                    document.getElementById('g1-loading-overlay').classList.add('hidden');
+                    document.getElementById('g1-start-overlay').classList.remove('hidden');
                 }
             },
             startCountdown: () => {
@@ -629,11 +612,13 @@
                     Game1.time--; document.getElementById('g1-timer').innerText = Game1.time;
                     if(Game1.time <= 0) { Game1.stop(); InitAI.showQuiz(); }
                 }, 1000);
+                Game1.TrackLoop();
                 Game1.RenderLoop();
             },
             stop: () => {
                 Game1.isRunning = false; clearInterval(Game1.timerInterval);
                 if(Game1.reqId) cancelAnimationFrame(Game1.reqId);
+                if(Game1.trackId) clearTimeout(Game1.trackId);
                 if(Game1.stream) { Game1.stream.getTracks().forEach(t => t.stop()); Game1.stream = null; }
             },
             createParticles: (x, y, color) => {
@@ -644,23 +629,23 @@
                     });
                 }
             },
-            RenderLoop: async () => {
+            TrackLoop: async () => {
                 if (!Game1.isRunning) return;
-                Game1.ctx.clearRect(0, 0, Game1.canvas.width, Game1.canvas.height);
-                
-                if(!Game1.mouseMode) {
-                    Game1.ctx.drawImage(Game1.video, 0, 0, Game1.canvas.width, Game1.canvas.height);
+                try {
                     const preds = await Game1.model.estimateFaces(Game1.video, false);
                     if (preds.length > 0) {
                         const nose = preds[0].landmarks[2]; const targetX = Game1.canvas.width - nose[0];
                         Game1.basket.x += (targetX - Game1.basket.x) * 0.25; 
-                        Game1.ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
-                        Game1.ctx.beginPath(); Game1.ctx.arc(nose[0], nose[1], 8, 0, 2*Math.PI); Game1.ctx.fill();
                     }
-                } else {
-                    Game1.ctx.fillStyle = '#0f172a'; Game1.ctx.fillRect(0, 0, Game1.canvas.width, Game1.canvas.height);
-                }
-
+                } catch(e) {}
+                Game1.trackId = setTimeout(Game1.TrackLoop, 50); // track face at ~20 FPS independently
+            },
+            RenderLoop: () => {
+                if (!Game1.isRunning) return;
+                Game1.ctx.clearRect(0, 0, Game1.canvas.width, Game1.canvas.height);
+                Game1.ctx.drawImage(Game1.video, 0, 0, Game1.canvas.width, Game1.canvas.height);
+                
+                // Falling mechanics dependent on consistent 60 FPS RenderLoop
                 if(Math.random() < 0.03 + (Game1.score * 0.002)) {
                     const colors = ['#3b82f6', '#ec4899', '#10b981', '#8b5cf6'];
                     let margin = Game1.canvas.width * 0.2;
@@ -671,7 +656,7 @@
                     });
                 }
 
-                let bX = Game1.mouseMode ? Game1.basket.x : (Game1.canvas.width - Game1.basket.x);
+                let bX = (Game1.canvas.width - Game1.basket.x); // flipped for mirror
                 let basketDrawX = bX - Game1.basket.width/2; let basketDrawY = Game1.canvas.height - Game1.basket.height - 20;
                 
                 Game1.ctx.fillStyle = Game1.basket.color;
@@ -687,7 +672,7 @@
 
                 for(let i=Game1.items.length-1; i>=0; i--) {
                     let it = Game1.items[i]; it.y += it.speed;
-                    let vX = Game1.mouseMode ? it.x : (Game1.canvas.width - it.x);
+                    let vX = (Game1.canvas.width - it.x);
                     
                     let grd = Game1.ctx.createRadialGradient(vX-5, it.y-5, 2, vX, it.y, it.radius);
                     grd.addColorStop(0, "white"); grd.addColorStop(1, it.color);
@@ -731,7 +716,11 @@
                 { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" },
                 { word: "con chó", emoji: "🐶" }, { word: "quả chuối", emoji: "🍌" },
                 { word: "dưa hấu", emoji: "🍉" }, { word: "xe đạp", emoji: "🚲" },
-                { word: "bánh pizza", emoji: "🍕" }, { word: "hoa hướng dương", emoji: "🌻" }
+                { word: "bánh pizza", emoji: "🍕" }, { word: "hoa hướng dương", emoji: "🌻" },
+                { word: "cái mũ", emoji: "🎩" }, { word: "cái kính", emoji: "👓" },
+                { word: "đồng hồ", emoji: "⌚" }, { word: "điện thoại", emoji: "📱" },
+                { word: "quả cam", emoji: "🍊" }, { word: "con hổ", emoji: "🐯" },
+                { word: "con chim", emoji: "🐦" }, { word: "quyển sách", emoji: "📚" }
             ],
             currentTargets: [],
 
@@ -874,14 +863,13 @@
                 Game2.recog.continuous = true; Game2.recog.interimResults = true;
                 
                 Game2.recog.onresult = (e) => {
-                    if(Game2.isAttacking) return; // Ignore while explosion is happening
+                    if(Game2.isAttacking) return; 
                     let text = '';
                     for (let i = e.resultIndex; i < e.results.length; ++i) { text += e.results[i][0].transcript; }
                     document.getElementById('stt-feedback').innerText = `Đang nghe: "${text}"`;
                     Game2.checkSpell(text);
                 };
                 Game2.recog.onend = () => {
-                    // Continuous loop mechanic
                     if(Game2.isMicOn && Game2.state === 'playing') {
                         try { Game2.recog.start(); } catch(e){}
                     }
@@ -1064,11 +1052,9 @@
                 if(Game3.reqId) cancelAnimationFrame(Game3.reqId);
             },
             generateTarget: () => {
-                // Random target between 0.6 and 1.9
                 Game3.targetRate = (Math.random() * 1.3 + 0.6).toFixed(1);
                 Game3.targetPitch = (Math.random() * 1.3 + 0.6).toFixed(1);
                 
-                // Reset sliders to 1.0 so user has to adjust
                 document.getElementById('tts-rate').value = 1.0;
                 document.getElementById('tts-pitch').value = 1.0;
                 document.getElementById('val-rate').innerText = '1.0';
@@ -1086,7 +1072,6 @@
                 
                 const width = 800; const height = 200; const midY = height/2;
                 
-                // UFO Path (Target)
                 let uFreq = Game3.targetRate * 0.02; 
                 let uAmp = Game3.targetPitch * 40; 
                 let dUfo = `M 0 ${midY}`;
@@ -1096,7 +1081,6 @@
                 }
                 document.getElementById('path-ufo').setAttribute('d', dUfo);
                 
-                // Player Path
                 let pRate = parseFloat(document.getElementById('tts-rate').value);
                 let pPitch = parseFloat(document.getElementById('tts-pitch').value);
                 let pFreq = pRate * 0.02;
@@ -1117,7 +1101,6 @@
                 const pRate = parseFloat(document.getElementById('tts-rate').value);
                 const pPitch = parseFloat(document.getElementById('tts-pitch').value);
                 
-                // Check win condition (tolerance 0.2)
                 const diffRate = Math.abs(pRate - Game3.targetRate);
                 const diffPitch = Math.abs(pPitch - Game3.targetPitch);
                 const isMatch = (diffRate <= 0.2 && diffPitch <= 0.2);
@@ -1132,45 +1115,49 @@
                 SFX.playDrone();
                 
                 const text = document.getElementById('alien-text').value;
-                if('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const utt = new SpeechSynthesisUtterance(text);
-                    if(appState.viVoice) utt.voice = appState.viVoice;
-                    else utt.lang = 'vi-VN'; 
-                    utt.rate = pRate; utt.pitch = pPitch;
-                    
-                    const finish = () => {
-                        btn.innerHTML = '🔊 Phát Tín Hiệu Đồng Bộ';
-                        btn.disabled = false;
-                        
-                        if(isMatch) {
-                            feedback.innerText = "Đồng bộ thành công! Pin đã được nạp.";
-                            feedback.className = "mt-4 font-bold text-xl h-8 text-center text-emerald-500";
-                            Game3.battery += 50;
-                            document.getElementById('battery-fill').style.width = Game3.battery + '%';
-                            document.getElementById('battery-text').innerText = Game3.battery + '%';
-                            
-                            if(Game3.battery >= 100) {
-                                SFX.playIgnition();
-                                document.getElementById('ufo-container').classList.add('fly-away');
-                                Game3.state = 'done';
-                                setTimeout(() => InitAI.showQuiz(), 2500);
-                            } else {
-                                setTimeout(() => { Game3.generateTarget(); }, 2000);
-                            }
-                        } else {
-                            feedback.innerText = "Tần số không khớp! Đĩa bay không thể giải mã.";
-                            feedback.className = "mt-4 font-bold text-xl h-8 text-center text-crimson-500";
-                        }
-                    };
-                    utt.onend = finish; utt.onerror = finish;
-                    window.speechSynthesis.speak(utt);
-                    
-                    // Fallback just in case TTS engine is broken
-                    setTimeout(() => { if(btn.disabled) finish(); }, 6000); 
-                } else {
-                    alert("Trình duyệt không hỗ trợ Web Speech API.");
+                const finish = () => {
+                    btn.innerHTML = '🔊 Phát Tín Hiệu Đồng Bộ';
                     btn.disabled = false;
+                    
+                    if(isMatch) {
+                        feedback.innerText = "Đồng bộ thành công! Pin đã được nạp.";
+                        feedback.className = "mt-4 font-bold text-xl h-8 text-center text-emerald-500";
+                        Game3.battery += 50;
+                        document.getElementById('battery-fill').style.width = Game3.battery + '%';
+                        document.getElementById('battery-text').innerText = Game3.battery + '%';
+                        
+                        if(Game3.battery >= 100) {
+                            SFX.playIgnition();
+                            document.getElementById('ufo-container').classList.add('fly-away');
+                            Game3.state = 'done';
+                            setTimeout(() => InitAI.showQuiz(), 2500);
+                        } else {
+                            setTimeout(() => { Game3.generateTarget(); }, 2000);
+                        }
+                    } else {
+                        feedback.innerText = "Tần số không khớp! Đĩa bay không thể giải mã.";
+                        feedback.className = "mt-4 font-bold text-xl h-8 text-center text-crimson-500";
+                    }
+                };
+
+                // Use ResponsiveVoice JS for guaranteed Vietnamese Voice
+                if (window.responsiveVoice) {
+                    responsiveVoice.speak(text, "Vietnamese Male", {pitch: pPitch, rate: pRate, onend: finish});
+                } else {
+                    // Fallback to local TTS
+                    if('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                        const utt = new SpeechSynthesisUtterance(text);
+                        if(appState.viVoice) utt.voice = appState.viVoice;
+                        else utt.lang = 'vi-VN'; 
+                        utt.rate = pRate; utt.pitch = pPitch;
+                        utt.onend = finish; utt.onerror = finish;
+                        window.speechSynthesis.speak(utt);
+                        setTimeout(() => { if(btn.disabled) finish(); }, 6000); 
+                    } else {
+                        alert("Trình duyệt không hỗ trợ Web Speech API.");
+                        btn.disabled = false;
+                    }
                 }
             }
         };
