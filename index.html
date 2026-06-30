@@ -663,8 +663,10 @@
 
                 if(Math.random() < 0.03 + (Game1.score * 0.002)) {
                     const colors = ['#3b82f6', '#ec4899', '#10b981', '#8b5cf6'];
+                    let margin = Game1.canvas.width * 0.2;
+                    let spawnWidth = Game1.canvas.width * 0.6;
                     Game1.items.push({
-                        x: Math.random() * (Game1.canvas.width - 40) + 20, y: -30, radius: Math.random() * 15 + 10,
+                        x: Math.random() * spawnWidth + margin, y: -30, radius: Math.random() * 15 + 10,
                         speed: Math.random() * 3 + 3, color: colors[Math.floor(Math.random()*colors.length)]
                     });
                 }
@@ -673,7 +675,13 @@
                 let basketDrawX = bX - Game1.basket.width/2; let basketDrawY = Game1.canvas.height - Game1.basket.height - 20;
                 
                 Game1.ctx.fillStyle = Game1.basket.color;
-                Game1.ctx.beginPath(); Game1.ctx.roundRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height, 10); Game1.ctx.fill();
+                Game1.ctx.beginPath();
+                if (Game1.ctx.roundRect) {
+                    Game1.ctx.roundRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height, 10);
+                } else {
+                    Game1.ctx.rect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
+                }
+                Game1.ctx.fill();
                 Game1.ctx.fillStyle = '#fff'; Game1.ctx.font = 'bold 14px Inter'; Game1.ctx.textAlign='center';
                 Game1.ctx.fillText("GIỎ HỨNG QUÀ", bX, basketDrawY + 17);
 
