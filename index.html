@@ -79,10 +79,10 @@
         #webcam-video { transform: scaleX(-1); display: none; }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
         }
         .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         
@@ -122,35 +122,31 @@
         @keyframes fall-confetti { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
         
         /* Custom range slider SOTBF style */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 24px;
-            width: 24px;
-            border-radius: 4px;
-            background: #FFC107;
-            cursor: pointer;
-            border: 3px solid #1e293b;
-            box-shadow: 2px 2px 0px #1e293b;
-            margin-top: -8px;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 10px;
-            cursor: pointer;
-            background: white;
-            border-radius: 4px;
-            border: 2px solid #1e293b;
-        }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 4px; background: #FFC107; cursor: pointer; border: 3px solid #1e293b; box-shadow: 2px 2px 0px #1e293b; margin-top: -8px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 10px; cursor: pointer; background: white; border-radius: 4px; border: 2px solid #1e293b; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center pt-24 pb-10" onclick="SFX.init(); InitAI.loadVoices()">
+<body class="min-h-screen flex flex-col items-center pt-24 pb-10">
 
-    <nav class="fixed top-6 left-1/2 -translate-x-1/2 z-50 cute-box p-1 flex gap-1 w-[95%] max-w-3xl overflow-x-auto no-scrollbar bg-white">
+    <!-- LANDING PAGE -->
+    <div id="landing-page" class="fixed inset-0 bg-sotbf-bg z-[200] flex flex-col items-center justify-center p-6 text-center">
+        <div class="cute-box p-10 max-w-3xl flex flex-col items-center">
+            <h1 class="text-5xl md:text-7xl font-black text-sotbf-dark tracking-tighter mb-4 uppercase">Giác Quan Của Máy</h1>
+            <h2 class="text-2xl text-sotbf-blue font-bold mb-8 font-mono border-b-4 border-sotbf-blue pb-2 inline-block">Công Nghệ Gì Đây?</h2>
+            
+            <p class="text-lg md:text-xl font-body font-medium text-sotbf-dark mb-10 max-w-2xl leading-relaxed">
+                Chào mừng bạn đến với chương trình trải nghiệm Tương tác Trí tuệ Nhân tạo.<br><br>
+                Hãy cùng khám phá xem máy tính "nhìn", "nghe" và "nói" như thế nào thông qua 3 trò chơi thử thách đầy hấp dẫn!
+            </p>
+            
+            <button onclick="InitAI.startApp()" class="btn-sotbf btn-yellow py-4 px-12 text-2xl font-black uppercase flex items-center shadow-[6px_6px_0px_#1e293b]">
+                <i class="fa-solid fa-rocket mr-3 text-3xl"></i> Bắt đầu trải nghiệm
+            </button>
+        </div>
+    </div>
+
+    <nav id="main-nav" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 cute-box p-1 flex gap-1 w-[95%] max-w-3xl overflow-x-auto no-scrollbar bg-white hidden">
         <button onclick="InitAI.switchTab(0)" id="tab-0" class="tab-btn active flex-1 whitespace-nowrap px-4 py-2 font-heading font-black text-sotbf-dark transition-all flex items-center justify-center text-sm md:text-base border-2 border-transparent">
             <i class="fa-solid fa-eye mr-2"></i>Game 1
         </button>
@@ -166,7 +162,7 @@
         .tab-btn:hover:not(.active) { background-color: #f1f5f9; border-radius: 4px; }
     </style>
 
-    <main class="w-full max-w-5xl mx-auto flex-1 p-4 relative flex flex-col items-center justify-center">
+    <main id="main-content" class="w-full max-w-5xl mx-auto flex-1 p-4 relative flex-col items-center justify-center hidden">
 
         <!-- ========================================== -->
         <!-- VIEW 0: GAME 1 -->
@@ -226,8 +222,11 @@
                     </div>
                 </div>
 
-                <video id="webcam-video" autoplay playsinline muted></video>
-                <canvas id="game-canvas" class="w-full h-full object-cover"></canvas>
+                <!-- Bọc Canvas vào container để khi rung container sẽ không đè transform của canvas -->
+                <div id="g1-canvas-container" class="w-full h-full relative">
+                    <video id="webcam-video" autoplay playsinline muted></video>
+                    <canvas id="game-canvas" class="w-full h-full object-cover absolute top-0 left-0"></canvas>
+                </div>
             </div>
         </section>
 
@@ -364,7 +363,6 @@
             </div>
 
             <div class="flex flex-col lg:flex-row gap-8 w-full">
-                <!-- Left Panel -->
                 <div class="flex-1 flex flex-col gap-6 w-full lg:w-1/2">
                     <div class="bg-white p-5 cute-box" style="box-shadow: 4px 4px 0px #1e293b;">
                         <label class="block text-sm font-bold text-sotbf-dark mb-3 uppercase font-mono">Câu lệnh gửi đến UFO</label>
@@ -389,9 +387,7 @@
                     </div>
                 </div>
 
-                <!-- Right Panel -->
                 <div class="flex-1 bg-white p-5 cute-box flex flex-col items-center justify-between relative overflow-hidden h-[400px] w-full lg:w-1/2" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px;">
-                    
                     <div id="ufo-container" class="z-10 text-6xl mb-2 animate-bounce mt-2" style="filter: drop-shadow(4px 4px 0px #1e293b);">🛸</div>
                     
                     <div class="relative w-full h-[200px] bg-white border-4 border-sotbf-dark overflow-hidden z-10 flex-1 my-4 flex items-center">
@@ -428,11 +424,11 @@
 
     </main>
 
-    <!-- Quiz Modal -->
+    <!-- Quiz Modal (WIN) -->
     <div id="quiz-modal" class="fixed inset-0 bg-sotbf-bg/90 z-[100] hidden flex items-center justify-center p-4">
         <div class="cute-box p-8 md:p-12 w-full max-w-2xl relative" id="quiz-card">
             <div class="text-center mb-8">
-                <h3 class="text-3xl md:text-4xl font-black text-sotbf-dark tracking-tight mb-2">Thử Thách Đánh Giá 🧠</h3>
+                <h3 class="text-3xl md:text-4xl font-black text-sotbf-dark tracking-tight mb-2">Chiến thắng! Làm thử thách nhé 🧠</h3>
                 <p class="text-sotbf-dark mt-2 font-body font-bold text-lg border-b-2 pb-6 border-slate-200">Đố bạn trò chơi tương tác vừa rồi đã sử dụng loại công nghệ AI nào?</p>
             </div>
             <div class="space-y-4 font-mono" id="quiz-options">
@@ -449,6 +445,17 @@
                     Chuyển sang màn tiếp <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal (LOSE) -->
+    <div id="game-over-modal" class="fixed inset-0 bg-sotbf-bg/90 z-[100] hidden flex items-center justify-center p-4">
+        <div class="cute-box p-10 w-full max-w-xl text-center">
+            <h3 class="text-4xl font-black text-sotbf-red tracking-tight mb-4 uppercase">Thất Bại!</h3>
+            <p id="game-over-reason" class="text-sotbf-dark mt-2 font-body font-bold text-xl mb-8">Bạn đã hết thời gian hoặc hết mạng.</p>
+            <button onclick="InitAI.playAgainFromLose()" class="btn-sotbf btn-yellow py-4 px-10 text-2xl">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Chơi Lại Ngay
+            </button>
         </div>
     </div>
     
@@ -516,10 +523,15 @@
                     appState.viVoice = voices.find(v => v.lang.includes('vi') || v.name.includes('Tiếng Việt') || v.name.includes('Vietnamese') || v.name.includes('An'));
                 }
             },
+            startApp: () => {
+                document.getElementById('landing-page').classList.add('hidden');
+                document.getElementById('main-nav').classList.remove('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('flex');
+                InitAI.switchTab(0);
+            },
             stopAll: () => {
-                Game1.stop();
-                Game2.resetTotal();
-                Game3.stop();
+                Game1.stop(); Game2.resetTotal(); Game3.stop();
                 if(window.speechSynthesis) window.speechSynthesis.cancel();
             },
             switchTab: (index) => {
@@ -546,6 +558,14 @@
                     btn.disabled = false;
                 });
                 modal.classList.remove('hidden');
+            },
+            showLoseModal: (reason) => {
+                document.getElementById('game-over-reason').innerText = reason;
+                document.getElementById('game-over-modal').classList.remove('hidden');
+            },
+            playAgainFromLose: () => {
+                document.getElementById('game-over-modal').classList.add('hidden');
+                InitAI.switchTab(appState.activeTab);
             },
             checkAnswer: (index, btn) => {
                 if (btn.disabled) return;
@@ -586,16 +606,14 @@
             }
         };
 
-        if(window.speechSynthesis) {
-            window.speechSynthesis.onvoiceschanged = InitAI.loadVoices;
-        }
+        if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged = InitAI.loadVoices;
 
         // ==========================================
         // GAME 1
         // ==========================================
         const Game1 = {
             model: null, stream: null, ctx: null, reqId: null, trackId: null, isRunning: false,
-            basket: { x: 320, y: 240, width: 120, height: 25, color: '#1e293b' },
+            basket: { x: 320, y: 240, width: 80, height: 25, color: '#1e293b' },
             targetBasket: { x: 320, y: 240 },
             items: [], particles: [], score: 0, target: 25, time: 60, timerInterval: null,
             difficulty: 'easy', ballCount: 0, hp: 3, maxHp: 3, freezeUntil: 0, slowUntil: 0,
@@ -607,8 +625,7 @@
                 document.getElementById('g1-loading-overlay').classList.add('hidden');
                 document.getElementById('g1-countdown-overlay').classList.add('hidden');
                 document.getElementById('game1-ui').classList.add('hidden');
-                Game1.stop();
-                Game1.selectDiff('easy');
+                Game1.stop(); Game1.selectDiff('easy');
             },
             closeTutorial: () => {
                 document.getElementById('g1-tutorial-overlay').classList.add('hidden');
@@ -616,8 +633,8 @@
             },
             selectDiff: (level) => {
                 ['easy', 'medium', 'hard'].forEach(l => {
-                    const btn = document.getElementById(`g1-btn-${l}`);
-                    btn.classList.remove('btn-green'); btn.classList.add('btn-white');
+                    document.getElementById(`g1-btn-${l}`).classList.remove('btn-green');
+                    document.getElementById(`g1-btn-${l}`).classList.add('btn-white');
                 });
                 document.getElementById(`g1-btn-${level}`).classList.add('btn-green');
                 document.getElementById(`g1-btn-${level}`).classList.remove('btn-white');
@@ -630,8 +647,7 @@
             renderHP: () => {
                 const hpCont = document.getElementById('g1-hp-container');
                 if (Game1.difficulty === 'easy') { hpCont.classList.add('hidden'); return; }
-                hpCont.classList.remove('hidden');
-                hpCont.innerHTML = '';
+                hpCont.classList.remove('hidden'); hpCont.innerHTML = '';
                 for(let i=0; i<Game1.maxHp; i++) {
                     hpCont.innerHTML += `<i class="fa-solid fa-heart ${i < Game1.hp ? '' : 'opacity-20'}"></i>`;
                 }
@@ -659,10 +675,8 @@
             },
             startCountdown: () => {
                 document.getElementById('g1-countdown-overlay').classList.remove('hidden');
-                let count = 3;
-                const txt = document.getElementById('g1-countdown-text');
+                let count = 3; const txt = document.getElementById('g1-countdown-text');
                 txt.innerText = count; SFX.playTing();
-                
                 const inter = setInterval(() => {
                     count--;
                     if(count > 0) { txt.innerText = count; SFX.playTing(); } 
@@ -688,10 +702,9 @@
                 clearInterval(Game1.timerInterval);
                 Game1.timerInterval = setInterval(() => {
                     Game1.time--; document.getElementById('g1-timer').innerText = Game1.time;
-                    if(Game1.time <= 0) { Game1.gameOver(false); }
+                    if(Game1.time <= 0) Game1.gameOver(false, "Bạn đã hết thời gian!");
                 }, 1000);
-                Game1.TrackLoop();
-                Game1.RenderLoop();
+                Game1.TrackLoop(); Game1.RenderLoop();
             },
             stop: () => {
                 Game1.isRunning = false; clearInterval(Game1.timerInterval);
@@ -699,15 +712,22 @@
                 if(Game1.trackId) clearTimeout(Game1.trackId);
                 if(Game1.stream) { Game1.stream.getTracks().forEach(t => t.stop()); Game1.stream = null; }
             },
-            gameOver: (win) => {
+            gameOver: (win, reason) => {
                 Game1.stop();
-                setTimeout(() => InitAI.showQuiz(), 1000);
+                if(win) {
+                    setTimeout(() => InitAI.showQuiz(), 1000);
+                } else {
+                    setTimeout(() => InitAI.showLoseModal(reason), 1000);
+                }
             },
             createParticles: (x, y, color, type) => {
-                for(let i=0; i<10; i++) {
+                const count = type === 'bomb' ? 30 : 10;
+                for(let i=0; i<count; i++) {
+                    let c = color;
+                    if(type === 'bomb') c = ['#ef4444', '#f97316', '#eab308'][Math.floor(Math.random()*3)];
                     Game1.particles.push({
-                        x: x, y: y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-                        life: 1.0, color: color, size: Math.random() * 6 + 4, type: type
+                        x: x, y: y, vx: (Math.random() - 0.5) * (type==='bomb'?20:10), vy: (Math.random() - 0.5) * (type==='bomb'?20:10),
+                        life: 1.0, color: c, size: Math.random() * (type==='bomb'?10:6) + 4, type: type
                     });
                 }
             },
@@ -725,8 +745,6 @@
             },
             RenderLoop: () => {
                 if (!Game1.isRunning) return;
-                
-                // Interpolate 60fps Basket
                 Game1.basket.x += (Game1.targetBasket.x - Game1.basket.x) * 0.2;
                 Game1.basket.y += (Game1.targetBasket.y - Game1.basket.y) * 0.2;
 
@@ -737,26 +755,19 @@
                 const isFrozen = now < Game1.freezeUntil;
                 const isSlow = now < Game1.slowUntil;
                 
-                // UI Buff
                 const buffCont = document.getElementById('g1-buff-container');
                 if (isFrozen) {
-                    buffCont.classList.remove('hidden');
-                    document.getElementById('g1-buff-icon').innerText = '❄️';
+                    buffCont.classList.remove('hidden'); document.getElementById('g1-buff-icon').innerText = '❄️';
                     document.getElementById('g1-buff-time').innerText = ((Game1.freezeUntil - now)/1000).toFixed(1) + 's';
                 } else if (isSlow) {
-                    buffCont.classList.remove('hidden');
-                    document.getElementById('g1-buff-icon').innerText = '⏳';
+                    buffCont.classList.remove('hidden'); document.getElementById('g1-buff-icon').innerText = '⏳';
                     document.getElementById('g1-buff-time').innerText = ((Game1.slowUntil - now)/1000).toFixed(1) + 's';
-                } else {
-                    buffCont.classList.add('hidden');
-                }
+                } else { buffCont.classList.add('hidden'); }
 
-                // Spawn Items
-                if(!isFrozen && Math.random() < 0.015 + (Game1.score * 0.001)) {
-                    let margin = Game1.canvas.width * 0.2;
-                    let spawnWidth = Game1.canvas.width * 0.6;
-                    let type = 'ball';
-                    let color = ['#4DA5F4', '#FFC107', '#22c55e', '#ef4444'][Math.floor(Math.random()*4)];
+                // Tỷ lệ xuất hiện: 0.0225 + (Game1.score * 0.0015)
+                if(!isFrozen && Math.random() < 0.0225 + (Game1.score * 0.0015)) {
+                    let margin = Game1.canvas.width * 0.2; let spawnWidth = Game1.canvas.width * 0.6;
+                    let type = 'ball'; let color = ['#4DA5F4', '#FFC107', '#22c55e', '#ef4444'][Math.floor(Math.random()*4)];
                     
                     Game1.ballCount++;
                     if (Game1.difficulty !== 'easy') {
@@ -764,7 +775,6 @@
                         else if (Game1.ballCount % 4 === 0) type = 'bomb';
                         else if (Game1.difficulty === 'hard' && Game1.ballCount % 15 === 0) type = 'sand';
                     }
-
                     Game1.items.push({
                         x: Math.random() * spawnWidth + margin, y: -30, radius: 15,
                         speed: (Math.random() * 3 + 3) * 0.8, color: color, type: type
@@ -775,65 +785,48 @@
                 let basketDrawX = bX - Game1.basket.width/2; 
                 let basketDrawY = Game1.basket.y - Game1.basket.height/2;
                 
-                // Draw Basket
-                Game1.ctx.fillStyle = '#FFC107';
-                Game1.ctx.fillRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
-                Game1.ctx.lineWidth = 3; Game1.ctx.strokeStyle = '#1e293b';
-                Game1.ctx.strokeRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
-                // Removed the "BASKET" text inside the basket
+                Game1.ctx.fillStyle = '#FFC107'; Game1.ctx.fillRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
+                Game1.ctx.lineWidth = 3; Game1.ctx.strokeStyle = '#1e293b'; Game1.ctx.strokeRect(basketDrawX, basketDrawY, Game1.basket.width, Game1.basket.height);
 
                 for(let i=Game1.items.length-1; i>=0; i--) {
                     let it = Game1.items[i]; 
-                    if (!isFrozen) {
-                        it.y += isSlow ? (it.speed * 0.2) : it.speed;
-                    }
+                    if (!isFrozen) it.y += isSlow ? (it.speed * 0.2) : it.speed;
                     let vX = (Game1.canvas.width - it.x);
                     
                     if (it.type === 'ball') {
-                        Game1.ctx.fillStyle = it.color;
-                        Game1.ctx.beginPath(); Game1.ctx.arc(vX, it.y, it.radius, 0, 2*Math.PI); Game1.ctx.fill();
-                        Game1.ctx.stroke();
+                        Game1.ctx.fillStyle = it.color; Game1.ctx.beginPath(); Game1.ctx.arc(vX, it.y, it.radius, 0, 2*Math.PI); Game1.ctx.fill(); Game1.ctx.stroke();
                     } else {
                         Game1.ctx.font = '30px Arial'; Game1.ctx.textAlign='center'; Game1.ctx.textBaseline='middle';
-                        let icon = '❄️';
-                        if (it.type === 'bomb') icon = '💣';
-                        if (it.type === 'sand') icon = '⏳';
+                        let icon = '❄️'; if (it.type === 'bomb') icon = '💣'; if (it.type === 'sand') icon = '⏳';
                         Game1.ctx.fillText(icon, vX, it.y);
                     }
 
-                    // Collision
                     if(it.y+it.radius >= basketDrawY && it.y <= basketDrawY+Game1.basket.height) {
                         if(Math.abs(it.x - Game1.basket.x) < Game1.basket.width/2 + it.radius) {
-                            
                             if (it.type === 'ball') {
                                 Game1.score++; document.getElementById('g1-score').innerText = Game1.score;
                                 SFX.playTing(); Game1.createParticles(vX, it.y, it.color, 'ball');
-                                if(Game1.score >= Game1.target) { Game1.gameOver(true); return; }
+                                if(Game1.score >= Game1.target) { Game1.gameOver(true, ""); return; }
                             } else if (it.type === 'snow') {
                                 SFX.playExplosion(); Game1.freezeUntil = now + 4000;
                             } else if (it.type === 'bomb') {
-                                SFX.playExplosion(); Game1.hp--; Game1.renderHP();
-                                document.getElementById('duel-arena') && document.getElementById('game-canvas').classList.add('animate-shake');
-                                setTimeout(() => document.getElementById('game-canvas').classList.remove('animate-shake'), 500);
-                                if(Game1.hp <= 0) { Game1.gameOver(false); return; }
+                                SFX.playExplosion(); Game1.hp--; Game1.renderHP(); Game1.createParticles(vX, it.y, '#ef4444', 'bomb');
+                                document.getElementById('g1-canvas-container').classList.add('animate-shake');
+                                setTimeout(() => document.getElementById('g1-canvas-container').classList.remove('animate-shake'), 500);
+                                if(Game1.hp <= 0) { Game1.gameOver(false, "Bạn đã trúng quá nhiều bom!"); return; }
                             } else if (it.type === 'sand') {
                                 SFX.playTing(); Game1.slowUntil = now + 3000;
                             }
-                            
-                            Game1.items.splice(i,1);
-                            continue;
+                            Game1.items.splice(i,1); continue;
                         }
                     }
                     if(it.y > Game1.canvas.height+50) Game1.items.splice(i,1);
                 }
 
                 for(let i=Game1.particles.length-1; i>=0; i--) {
-                    let p = Game1.particles[i];
-                    p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                    let p = Game1.particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.05;
                     if(p.life <= 0) { Game1.particles.splice(i,1); continue; }
-                    Game1.ctx.fillStyle = p.color;
-                    Game1.ctx.fillRect(p.x, p.y, p.size, p.size);
-                    Game1.ctx.strokeRect(p.x, p.y, p.size, p.size);
+                    Game1.ctx.fillStyle = p.color; Game1.ctx.fillRect(p.x, p.y, p.size, p.size); Game1.ctx.strokeRect(p.x, p.y, p.size, p.size);
                 }
                 Game1.reqId = requestAnimationFrame(Game1.RenderLoop);
             }
@@ -845,7 +838,7 @@
         const Game2 = {
             recog: null, botInterval: null, state: 'init',
             studentHP: 100, botHP: 100, difficulty: 'easy', numItems: 1,
-            streak: 0, lastSolveTime: 0, isMicOn: false, isAttacking: false,
+            streak: 0, lastSolveTime: 0, isMicOn: false, isAttacking: false, forceRestartSTT: false,
             words: [
                 { word: "quả táo", emoji: "🍎" }, { word: "con mèo", emoji: "🐱" }, 
                 { word: "xe hơi", emoji: "🚗" }, { word: "máy bay", emoji: "✈️" },
@@ -864,8 +857,7 @@
                 document.getElementById('g2-start-overlay').classList.add('hidden');
                 document.getElementById('g2-countdown-overlay').classList.add('hidden');
                 document.getElementById('combo-display').classList.add('opacity-0');
-                Game2.resetUI();
-                Game2.state = 'tutorial';
+                Game2.resetUI(); Game2.state = 'tutorial';
             },
             closeTutorial: () => {
                 document.getElementById('g2-tutorial-overlay').classList.add('hidden');
@@ -874,23 +866,19 @@
             },
             selectDiff: (level) => {
                 ['easy', 'medium', 'hard'].forEach(l => {
-                    const btn = document.getElementById(`btn-diff-${l}`);
-                    btn.classList.remove('btn-green'); btn.classList.add('btn-white');
+                    document.getElementById(`btn-diff-${l}`).classList.remove('btn-green'); 
+                    document.getElementById(`btn-diff-${l}`).classList.add('btn-white');
                 });
-                const btn = document.getElementById(`btn-diff-${level}`);
-                btn.classList.add('btn-green'); btn.classList.remove('btn-white');
-                
+                document.getElementById(`btn-diff-${level}`).classList.add('btn-green'); 
+                document.getElementById(`btn-diff-${level}`).classList.remove('btn-white');
                 Game2.difficulty = level;
-                if(level === 'easy') Game2.numItems = 1;
-                else if(level === 'medium') Game2.numItems = 2;
-                else Game2.numItems = 3;
+                if(level === 'easy') Game2.numItems = 1; else if(level === 'medium') Game2.numItems = 2; else Game2.numItems = 3;
             },
             startCountdown: () => {
                 document.getElementById('g2-start-overlay').classList.add('hidden');
                 document.getElementById('g2-countdown-overlay').classList.remove('hidden');
                 Game2.state = 'countdown';
-                let count = 3;
-                const txt = document.getElementById('g2-countdown-text');
+                let count = 3; const txt = document.getElementById('g2-countdown-text');
                 txt.innerText = count; SFX.playTing();
                 const inter = setInterval(() => {
                     count--;
@@ -904,8 +892,7 @@
                 }, 1000);
             },
             resetUI: () => {
-                Game2.studentHP = 100; Game2.botHP = 100;
-                Game2.streak = 0; Game2.lastSolveTime = 0; Game2.isMicOn = false;
+                Game2.studentHP = 100; Game2.botHP = 100; Game2.streak = 0; Game2.lastSolveTime = 0; Game2.isMicOn = false;
                 Game2.updateHP('student', 100); Game2.updateHP('bot', 100);
                 clearInterval(Game2.botInterval);
                 document.getElementById('student-bubble').classList.remove('opacity-100');
@@ -935,12 +922,10 @@
                 Game2.isAttacking = false; Game2.currentTargets = [];
                 let tempWords = [...Game2.words];
                 for(let i=0; i<Game2.numItems; i++) {
-                    let idx = Math.floor(Math.random() * tempWords.length);
-                    let w = tempWords.splice(idx, 1)[0];
+                    let idx = Math.floor(Math.random() * tempWords.length); let w = tempWords.splice(idx, 1)[0];
                     let anim = '';
                     if(Game2.difficulty === 'hard') {
-                        const anims = ['anim-circle', 'anim-eight', 'anim-bounce-alt'];
-                        anim = anims[Math.floor(Math.random()*anims.length)];
+                        const anims = ['anim-circle', 'anim-eight', 'anim-bounce-alt']; anim = anims[Math.floor(Math.random()*anims.length)];
                     }
                     Game2.currentTargets.push({ word: w.word, emoji: w.emoji, solved: false, animClass: anim });
                 }
@@ -948,21 +933,24 @@
                 document.getElementById('student-bubble').classList.remove('opacity-0');
                 document.getElementById('student-bubble').classList.add('opacity-100');
                 document.getElementById('stt-feedback').innerText = "";
+                
+                // Ép khởi động lại Recognition để xóa buffer của câu nói trước
+                if(Game2.isMicOn && Game2.recog) {
+                    Game2.forceRestartSTT = true;
+                    try { Game2.recog.stop(); } catch(e){}
+                }
             },
             renderBubble: () => {
                 const container = document.getElementById('emoji-container'); container.innerHTML = '';
                 if(Game2.difficulty === 'hard') {
                     const positions = [ {l:'10%', t:'10%'}, {l:'45%', t:'20%'}, {l:'80%', t:'5%'} ];
                     Game2.currentTargets.forEach((t, i) => {
-                        let span = document.createElement('span');
-                        span.className = `emoji-item ${t.animClass} ${t.solved ? 'emoji-solved':''}`;
-                        span.style.left = positions[i].l; span.style.top = positions[i].t;
-                        span.innerText = t.emoji; container.appendChild(span);
+                        let span = document.createElement('span'); span.className = `emoji-item ${t.animClass} ${t.solved ? 'emoji-solved':''}`;
+                        span.style.left = positions[i].l; span.style.top = positions[i].t; span.innerText = t.emoji; container.appendChild(span);
                     });
                 } else {
                     Game2.currentTargets.forEach(t => {
-                        let span = document.createElement('span');
-                        span.className = `emoji-item relative ${t.solved ? 'emoji-solved':''}`;
+                        let span = document.createElement('span'); span.className = `emoji-item relative ${t.solved ? 'emoji-solved':''}`;
                         span.innerText = t.emoji; container.appendChild(span);
                     });
                 }
@@ -979,7 +967,12 @@
                     document.getElementById('stt-feedback').innerText = `Đang nghe: "${text}"`;
                     Game2.checkSpell(text);
                 };
-                Game2.recog.onend = () => { if(Game2.isMicOn && Game2.state === 'playing') { try { Game2.recog.start(); } catch(e){} } };
+                Game2.recog.onend = () => { 
+                    if(Game2.isMicOn && (Game2.state === 'playing' || Game2.forceRestartSTT)) { 
+                        Game2.forceRestartSTT = false;
+                        try { Game2.recog.start(); } catch(e){} 
+                    } 
+                };
                 return true;
             },
             toggleMic: () => {
@@ -1004,9 +997,7 @@
                 Game2.currentTargets.forEach(target => {
                     if(!target.solved) {
                         const coreWord = target.word.split(" ")[1] || target.word; 
-                        if (clean.includes(target.word.toLowerCase()) || clean.includes(coreWord)) {
-                            target.solved = true; newlySolved = true;
-                        }
+                        if (clean.includes(target.word.toLowerCase()) || clean.includes(coreWord)) { target.solved = true; newlySolved = true; }
                     }
                 });
                 if(newlySolved) {
@@ -1019,8 +1010,7 @@
             },
             studentAttack: () => {
                 Game2.isAttacking = true; let now = Date.now();
-                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 3000)) Game2.streak++;
-                else Game2.streak = 1;
+                if(Game2.lastSolveTime > 0 && (now - Game2.lastSolveTime < 3000)) Game2.streak++; else Game2.streak = 1;
                 Game2.lastSolveTime = Date.now(); 
                 
                 if (Game2.streak > 1) {
@@ -1037,20 +1027,15 @@
                 document.getElementById('student-bubble').classList.remove('opacity-100');
                 document.getElementById('student-bubble').classList.add('opacity-0');
                 const char = document.getElementById('student-char');
-                char.classList.add('anim-attack-right');
-                setTimeout(() => char.classList.remove('anim-attack-right'), 500);
+                char.classList.add('anim-attack-right'); setTimeout(() => char.classList.remove('anim-attack-right'), 500);
 
-                const proj = document.getElementById('projectile');
-                proj.className = "magic-projectile shoot-bot";
+                const proj = document.getElementById('projectile'); proj.className = "magic-projectile shoot-bot";
                 setTimeout(() => {
-                    SFX.playExplosion();
-                    document.getElementById('duel-arena').classList.add('animate-shake');
+                    SFX.playExplosion(); document.getElementById('duel-arena').classList.add('animate-shake');
                     setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
                     
-                    let dmg = 25 + (Game2.streak - 1) * 5;
-                    Game2.botHP = Math.max(0, Game2.botHP - dmg);
-                    Game2.updateHP('bot', Game2.botHP);
-                    proj.className = "magic-projectile"; 
+                    let dmg = 25 + (Game2.streak - 1) * 5; Game2.botHP = Math.max(0, Game2.botHP - dmg);
+                    Game2.updateHP('bot', Game2.botHP); proj.className = "magic-projectile"; 
                     
                     if(Game2.botHP <= 0) {
                         Game2.state = 'done'; clearInterval(Game2.botInterval);
@@ -1062,23 +1047,19 @@
             botAttack: () => {
                 if(Game2.state !== 'playing') return;
                 SFX.playExplosion(); Game2.streak = 0; Game2.lastSolveTime = 0;
-                const char = document.getElementById('bot-char');
-                char.classList.add('anim-attack-left');
+                const char = document.getElementById('bot-char'); char.classList.add('anim-attack-left');
                 setTimeout(() => char.classList.remove('anim-attack-left'), 500);
 
-                const proj = document.getElementById('projectile');
-                proj.className = "magic-projectile shoot-student";
+                const proj = document.getElementById('projectile'); proj.className = "magic-projectile shoot-student";
                 setTimeout(() => {
                     document.getElementById('duel-arena').classList.add('animate-shake');
                     setTimeout(()=>document.getElementById('duel-arena').classList.remove('animate-shake'), 500);
-                    Game2.studentHP = Math.max(0, Game2.studentHP - 15);
-                    Game2.updateHP('student', Game2.studentHP);
+                    Game2.studentHP = Math.max(0, Game2.studentHP - 15); Game2.updateHP('student', Game2.studentHP);
                     proj.className = "magic-projectile";
                     if(Game2.studentHP <= 0) {
                         Game2.state = 'done'; clearInterval(Game2.botInterval);
                         if(Game2.isMicOn) Game2.toggleMic();
-                        alert("Học sinh đã hết máu! Game sẽ đưa bạn về phòng chờ.");
-                        Game2.initTab(); 
+                        setTimeout(() => InitAI.showLoseModal("Học sinh đã cạn kiệt sinh lực!"), 1000);
                     }
                 }, 400); 
             }
@@ -1112,11 +1093,9 @@
             },
             selectDiff: (level) => {
                 ['easy', 'medium', 'hard'].forEach(l => {
-                    const btn = document.getElementById(`g3-btn-${l}`);
-                    btn.classList.remove('btn-green'); btn.classList.add('btn-white');
+                    document.getElementById(`g3-btn-${l}`).classList.remove('btn-green'); document.getElementById(`g3-btn-${l}`).classList.add('btn-white');
                 });
-                document.getElementById(`g3-btn-${level}`).classList.add('btn-green');
-                document.getElementById(`g3-btn-${level}`).classList.remove('btn-white');
+                document.getElementById(`g3-btn-${level}`).classList.add('btn-green'); document.getElementById(`g3-btn-${level}`).classList.remove('btn-white');
                 
                 Game3.difficulty = level;
                 if(level === 'easy') { Game3.tolerance = 0.2; document.getElementById('ufo-container').innerText = '🛸'; }
@@ -1141,27 +1120,19 @@
                 }, 1000);
             },
             startGame: () => {
-                Game3.state = 'playing';
-                Game3.generateTarget();
-                Game3.renderWaves();
+                Game3.state = 'playing'; Game3.generateTarget(); Game3.renderWaves();
             },
             stop: () => {
-                Game3.state = 'init';
-                if(Game3.reqId) cancelAnimationFrame(Game3.reqId);
-                clearTimeout(Game3.targetChangeTimer);
-                clearInterval(Game3.visibilityTimer);
+                Game3.state = 'init'; if(Game3.reqId) cancelAnimationFrame(Game3.reqId);
+                clearTimeout(Game3.targetChangeTimer); clearInterval(Game3.visibilityTimer);
             },
             generateTarget: () => {
                 Game3.isGeneratingTarget = true;
-                clearTimeout(Game3.targetChangeTimer);
-                clearInterval(Game3.visibilityTimer);
-                document.getElementById('path-ufo').style.opacity = 1;
-                Game3.isWaveVisible = true;
+                clearTimeout(Game3.targetChangeTimer); clearInterval(Game3.visibilityTimer);
+                document.getElementById('path-ufo').style.opacity = 1; Game3.isWaveVisible = true;
                 
-                document.getElementById('tts-rate').value = 1.0;
-                document.getElementById('tts-pitch').value = 1.0;
-                document.getElementById('val-rate').innerText = '1.0';
-                document.getElementById('val-pitch').innerText = '1.0';
+                document.getElementById('tts-rate').value = 1.0; document.getElementById('tts-pitch').value = 1.0;
+                document.getElementById('val-rate').innerText = '1.0'; document.getElementById('val-pitch').innerText = '1.0';
                 document.getElementById('g3-feedback').innerText = "";
 
                 setTimeout(() => {
@@ -1172,69 +1143,50 @@
                     if (Game3.state === 'playing') {
                         if (Game3.difficulty === 'medium') {
                             Game3.targetChangeTimer = setTimeout(() => {
-                                document.getElementById('g3-feedback').innerText = "Cảnh báo: Tần số mục tiêu đã thay đổi!";
+                                document.getElementById('g3-feedback').innerText = "Cảnh báo: Tần số mục tiêu đã tự động thay đổi!";
                                 document.getElementById('g3-feedback').className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red";
                                 Game3.generateTarget();
                             }, 6500);
                         } else if (Game3.difficulty === 'hard') {
                             Game3.targetChangeTimer = setTimeout(() => {
-                                document.getElementById('g3-feedback').innerText = "Cảnh báo: Tần số mục tiêu đã thay đổi!";
+                                document.getElementById('g3-feedback').innerText = "Cảnh báo: Tần số mục tiêu đã tự động thay đổi!";
                                 document.getElementById('g3-feedback').className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red";
                                 Game3.generateTarget();
                             }, 7000);
                             
                             Game3.visibilityTimer = setInterval(() => {
                                 if(Game3.state === 'playing' && !Game3.isGeneratingTarget) {
-                                    Game3.isWaveVisible = false;
-                                    document.getElementById('path-ufo').style.opacity = 0;
+                                    Game3.isWaveVisible = false; document.getElementById('path-ufo').style.opacity = 0;
                                     setTimeout(() => {
-                                        if (Game3.state === 'playing') {
-                                            Game3.isWaveVisible = true;
-                                            document.getElementById('path-ufo').style.opacity = 1;
-                                        }
-                                    }, 1000); // Tàng hình 1s
+                                        if (Game3.state === 'playing') { Game3.isWaveVisible = true; document.getElementById('path-ufo').style.opacity = 1; }
+                                    }, 1000); 
                                 }
-                            }, 3000); // Mỗi 3s
+                            }, 3000); 
                         }
                     }
-                }, 1000); // Chờ 1 giây giả lập tạo mục tiêu mới
+                }, 1000); 
             },
             onSliderChange: (e) => {
                 const val = parseFloat(e.target.value).toFixed(1);
                 if(e.target.id === 'tts-rate') document.getElementById('val-rate').innerText = val;
                 else document.getElementById('val-pitch').innerText = val;
             },
-            getWaveY: (x, freq, amp, phase) => {
-                return Math.sin(x * freq + phase) * amp; // Luôn dùng sóng Sin cho mọi cấp độ
-            },
+            getWaveY: (x, freq, amp, phase) => { return Math.sin(x * freq + phase) * amp; },
             renderWaves: () => {
                 if(Game3.state !== 'playing') return;
-                Game3.phase += 0.08;
-                const width = 800; const height = 200; const midY = height/2;
+                Game3.phase += 0.08; const width = 800; const height = 200; const midY = height/2;
                 
-                // Draw Target (ufo)
                 if (Game3.isGeneratingTarget) {
                     document.getElementById('path-ufo').setAttribute('d', `M 0 ${midY} L ${width} ${midY}`);
                 } else {
-                    let uFreq = Game3.targetRate * 0.02; 
-                    let uAmp = Game3.targetPitch * 40; 
-                    let dUfo = `M 0 ${midY}`;
-                    for(let x=0; x<=width; x+=5) {
-                        let y = midY + Game3.getWaveY(x, uFreq, uAmp, Game3.phase);
-                        dUfo += ` L ${x} ${y}`;
-                    }
+                    let uFreq = Game3.targetRate * 0.02; let uAmp = Game3.targetPitch * 40; let dUfo = `M 0 ${midY}`;
+                    for(let x=0; x<=width; x+=5) { let y = midY + Game3.getWaveY(x, uFreq, uAmp, Game3.phase); dUfo += ` L ${x} ${y}`; }
                     document.getElementById('path-ufo').setAttribute('d', dUfo);
                 }
                 
-                // Draw Player
-                let pRate = parseFloat(document.getElementById('tts-rate').value);
-                let pPitch = parseFloat(document.getElementById('tts-pitch').value);
-                let pFreq = pRate * 0.02; let pAmp = pPitch * 40;
-                let dPlayer = `M 0 ${midY}`;
-                for(let x=0; x<=width; x+=5) {
-                    let y = midY + Game3.getWaveY(x, pFreq, pAmp, Game3.phase);
-                    dPlayer += ` L ${x} ${y}`;
-                }
+                let pRate = parseFloat(document.getElementById('tts-rate').value); let pPitch = parseFloat(document.getElementById('tts-pitch').value);
+                let pFreq = pRate * 0.02; let pAmp = pPitch * 40; let dPlayer = `M 0 ${midY}`;
+                for(let x=0; x<=width; x+=5) { let y = midY + Game3.getWaveY(x, pFreq, pAmp, Game3.phase); dPlayer += ` L ${x} ${y}`; }
                 document.getElementById('path-player').setAttribute('d', dPlayer);
                 
                 Game3.reqId = requestAnimationFrame(Game3.renderWaves);
@@ -1246,8 +1198,7 @@
                 const pRate = parseFloat(document.getElementById('tts-rate').value);
                 const pPitch = parseFloat(document.getElementById('tts-pitch').value);
                 
-                const diffRate = Math.abs(pRate - Game3.targetRate);
-                const diffPitch = Math.abs(pPitch - Game3.targetPitch);
+                const diffRate = Math.abs(pRate - Game3.targetRate); const diffPitch = Math.abs(pPitch - Game3.targetPitch);
                 const isMatch = (diffRate <= Game3.tolerance && diffPitch <= Game3.tolerance);
 
                 const btn = document.getElementById('btn-signal');
@@ -1259,14 +1210,11 @@
                 feedback.className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-yellow";
                 SFX.playDrone();
                 
-                // Tạm dừng bộ đếm thay đổi mục tiêu trong lúc phát âm thanh
-                clearTimeout(Game3.targetChangeTimer);
-                clearInterval(Game3.visibilityTimer);
+                clearTimeout(Game3.targetChangeTimer); clearInterval(Game3.visibilityTimer);
 
                 const text = document.getElementById('alien-text').value;
                 const finish = () => {
-                    btn.innerHTML = '🔊 Phát Tín Hiệu';
-                    btn.disabled = false;
+                    btn.innerHTML = '🔊 Phát Tín Hiệu'; btn.disabled = false;
                     
                     if(isMatch) {
                         feedback.innerText = "Đồng bộ thành công! Pin đã được nạp.";
@@ -1276,17 +1224,14 @@
                         document.getElementById('battery-text').innerText = Game3.battery + '%';
                         
                         if(Game3.battery >= 100) {
-                            SFX.playIgnition();
-                            document.getElementById('ufo-container').classList.add('fly-away');
-                            Game3.state = 'done';
-                            setTimeout(() => InitAI.showQuiz(), 2500);
+                            SFX.playIgnition(); document.getElementById('ufo-container').classList.add('fly-away');
+                            Game3.state = 'done'; setTimeout(() => InitAI.showQuiz(), 2500);
                         } else {
                             Game3.generateTarget();
                         }
                     } else {
                         feedback.innerText = "Tần số không khớp! Thất bại.";
                         feedback.className = "mt-4 font-mono font-bold text-lg h-6 text-center text-sotbf-red";
-                        // Nếu sai, tiếp tục đếm lại bộ đếm của mức độ khó (nếu có)
                         if (Game3.state === 'playing') Game3.generateTarget(); 
                     }
                 };
@@ -1295,17 +1240,13 @@
                     responsiveVoice.speak(text, "Vietnamese Male", {pitch: pPitch, rate: pRate, onend: finish});
                 } else {
                     if('speechSynthesis' in window) {
-                        window.speechSynthesis.cancel();
-                        const utt = new SpeechSynthesisUtterance(text);
-                        if(appState.viVoice) utt.voice = appState.viVoice;
-                        else utt.lang = 'vi-VN'; 
-                        utt.rate = pRate; utt.pitch = pPitch;
-                        utt.onend = finish; utt.onerror = finish;
+                        window.speechSynthesis.cancel(); const utt = new SpeechSynthesisUtterance(text);
+                        if(appState.viVoice) utt.voice = appState.viVoice; else utt.lang = 'vi-VN'; 
+                        utt.rate = pRate; utt.pitch = pPitch; utt.onend = finish; utt.onerror = finish;
                         window.speechSynthesis.speak(utt);
                         setTimeout(() => { if(btn.disabled) finish(); }, 6000); 
                     } else {
-                        alert("Trình duyệt không hỗ trợ Web Speech API.");
-                        btn.disabled = false;
+                        alert("Trình duyệt không hỗ trợ Web Speech API."); btn.disabled = false;
                     }
                 }
             }
